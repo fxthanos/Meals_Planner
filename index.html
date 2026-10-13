@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مخطط الوجبات — الإصدار النهائي</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<header class="app-header no-print">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">🍽️</span>
+    <h1 id="appTitle">مخطط الوجبات</h1>
+  </div>
+  <nav class="tabs" aria-label="التنقل">
+    <a href="#/dashboard" data-nav="dashboard">لوحة التحكم</a>
+    <a href="#/catalog" data-nav="catalog">كتالوج المكونات</a>
+    <a href="#/meals" data-nav="meals">الوجبات</a>
+    <a href="#/settings" data-nav="settings">الإعدادات</a>
+    <a href="#/log" data-nav="log">سجل التحقق</a>
+  </nav>
+</header>
+
+<main id="view" aria-live="polite"></main>
+<div id="toasts" aria-live="polite"></div>
+
+<div class="modal-backdrop" id="modalBackdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3 id="modalTitle"></h3>
+    <div id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="btn" id="modalConfirm" type="button" data-act="modal-confirm">تأكيد</button>
+      <button class="btn ghost" id="modalCancel" type="button" data-act="modal-cancel">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay" hidden>
+  <div class="spinner"></div>
+  <div>جارٍ توليد الخطة…</div>
+</div>
+
+<input type="file" id="importFile" accept=".json" hidden>
+<input type="file" id="importSettingsFile" accept=".json" hidden>
+<input type="file" id="importProfileFile" accept=".json" hidden>
+
+<!-- app code: css/app.css + js/01..14 (classic scripts, file:// safe, order matters) -->
+<script src="js/01-constants.js"></script>
+<script src="js/02-utils.js"></script>
+<script src="js/03-storage.js"></script>
+<script src="js/04-config.js"></script>
+<script src="js/05-catalog.js"></script>
+<script src="js/06-rules.js"></script>
+<script src="js/07-validation.js"></script>
+<script src="js/08-generation.js"></script>
+<script src="js/09-state.js"></script>
+<script src="js/10-ui.js"></script>
+<script src="js/11-views.js"></script>
+<script src="js/12-actions.js"></script>
+<script src="js/13-modals.js"></script>
+<script src="js/14-events-boot.js"></script>
+</body>
+</html>
