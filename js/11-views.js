@@ -233,8 +233,14 @@ const Renderer = {
     const c = Config.get();
     const sec = (title, body, open = false) =>
       `<details class="cfg-section" ${open ? 'open' : ''}><summary>${escapeHtml(title)}</summary><div class="cfg-body">${body}</div></details>`;
-    const fld = (label, input, hint = '') =>
-      `<div class="setting-row"><label>${escapeHtml(label)}</label>${input}${hint ? `<small>${escapeHtml(hint)}</small>` : ''}</div>`;
+    let fldN = 0;
+    /* ponytail: associate label with control via data-cfg path (unique per field) */
+    const fld = (label, input, hint = '') => {
+      const m = /data-cfg="([^"]+)"/.exec(input);
+      const fid = 'f-' + (m ? m[1].replace(/[^a-zA-Z0-9]+/g, '-') : 'x' + (fldN++));
+      const tagged = input.replace(/<(input|select|textarea)(?=[\s>])/, '<$1 id="' + fid + '"');
+      return `<div class="setting-row"><label for="${fid}">${escapeHtml(label)}</label>${tagged}${hint ? `<small>${escapeHtml(hint)}</small>` : ''}</div>`;
+    };
     const single = (label, id, path) => {
       const name = id ? (Catalog.get(id)?.nameAr || id) : '— لم يُحدَّد —';
       return `<div class="setting-row"><label>${escapeHtml(label)}</label>
@@ -287,7 +293,8 @@ const Renderer = {
       </div>`;
     }).join('');
 
-    const ruleToggles = Object.keys(c.rulesEnabled).map(rid =>
+    /* ponytail: R3 is forced on by enforceChipsInvariant — no toggle, it would be a lie */
+    const ruleToggles = Object.keys(c.rulesEnabled).filter(rid => rid !== 'R3').map(rid =>
       `<label><input type="checkbox" data-rule="${escapeHtml(rid)}" ${c.rulesEnabled[rid] !== false ? 'checked' : ''}>
       <span>${escapeHtml(RULE_NAMES[rid] || rid)}</span></label>`).join('');
 
@@ -446,17 +453,20 @@ const Renderer = {
   },
 
   log(){
-    const items = State.current.log.length
-      ? State.current.log.map(e => {
-          const msgs = e.messages.length
-            ? `<ul>${e.messages.slice(0, 8).map(m => `<li>${escapeHtml(m)}</li>`).join('')}${e.messages.length > 8 ? `<li>و${e.messages.length - 8} رسالة أخرى…</li>` : ''}</ul>`
+    /* ponytail: tolerate foreign/legacy log entries — never crash the log view */
+    const entries = (isArray(State.current.log) ? State.current.log : []).filter(isObject);
+    const items = entries.length
+      ? entries.map(e => {
+          const msgs = isArray(e.messages) ? e.messages : [];
+          const shown = msgs.length
+            ? `<ul>${msgs.slice(0, 8).map(m => `<li>${escapeHtml(m)}</li>`).join('')}${msgs.length > 8 ? `<li>و${msgs.length - 8} رسالة أخرى…</li>` : ''}</ul>`
             : '<div class="small muted" style="margin-top:4px">لا توجد مخالفات.</div>';
           return `<li class="log-item ${e.ok ? 'ok' : 'bad'}">
             <div class="log-head">
               <strong>${escapeHtml(e.scope)}</strong>
               <span>${e.ok ? '✅ سليم' : '❌ مخالفات'}</span>
               <span class="muted small">${escapeHtml(new Date(e.ts).toLocaleString('ar-EG'))}</span>
-            </div>${msgs}</li>`;
+            </div>${shown}</li>`;
         }).join('')
       : '<li class="empty-state">لا توجد عمليات تحقق مسجلة بعد.</li>';
     return `<section class="panel">

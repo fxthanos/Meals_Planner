@@ -42,6 +42,8 @@ function deepClone(obj){ return JSON.parse(JSON.stringify(obj)); }
 function deepMerge(target, source){
   if (!isObject(source)) return target;
   Object.keys(source).forEach(k => {
+    /* ponytail: block prototype pollution from imported JSON */
+    if (k === '__proto__' || k === 'constructor' || k === 'prototype') return;
     const sv = source[k];
     if (isArray(sv)) target[k] = sv.slice();
     else if (isObject(sv)){

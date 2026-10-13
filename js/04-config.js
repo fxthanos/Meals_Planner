@@ -128,7 +128,8 @@ const Config = {
   },
   save(){
     if (!this.current) return;
-    if (this.current.behavior?.autoSave === false) return;
+    /* ponytail: settings edits are explicit — always persist (incl. the autoSave
+       toggle itself). autoSave gates State/Profiles auto-writes only. */
     if (!Storage.write(STORAGE_KEYS.CONFIG, this.current)) UI.toast('تعذّر حفظ البيانات', 'err');
   },
   get(){ return this.current; },

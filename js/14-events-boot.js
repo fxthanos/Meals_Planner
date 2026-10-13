@@ -255,6 +255,14 @@ document.addEventListener('change', function(e){
     if (!g) return;
     g[field] = el.value;
     State.save();
+    /* ponytail: re-render only for SELECT (classification) — text inputs skip render
+       because change fires on blur and render would destroy the click target mid-click */
+    if (el.tagName === 'SELECT'){
+      render();
+      const again = Array.from(document.querySelectorAll('[data-field]'))
+        .find(x => x.getAttribute('data-field') === field && x.getAttribute('data-id') === id);
+      if (again) again.focus();
+    }
     UI.toast('تم الحفظ', 'ok');
     return;
   }
@@ -262,7 +270,7 @@ document.addEventListener('change', function(e){
   if (el.getAttribute('data-usage-limit')){
     const id = el.getAttribute('data-usage-limit');
     const val = parseInt(el.value, 10);
-    if (!isNum(val) || val < 0){ UI.toast('قيمة غير صالحة', 'err'); return; }
+    if (!isNum(val) || val < 0){ UI.toast('قيمة غير صالحة', 'err'); render(); return; }
     const cfg = Config.get();
     if (!cfg.ingredientUsageLimits) cfg.ingredientUsageLimits = {};
     cfg.ingredientUsageLimits[id] = clamp(val, 0, 50);
@@ -308,7 +316,6 @@ document.addEventListener('change', function(e){
       if (path === 'maxMealCost' && val < Config.get().minMealCost){ UI.toast('الحد الأقصى أصغر من الأدنى', 'err'); render(); return; }
     }
     Config.set(path, val);
-    applyAppChrome();
     render();
     const again = Array.from(document.querySelectorAll('[data-cfg]')).find(x => x.getAttribute('data-cfg') === path);
     if (again){

@@ -56,7 +56,7 @@ const State = {
 
 const Profiles = {
   list: [],
-  load(){ this.list = Storage.read(STORAGE_KEYS.PROFILES, []) || []; return this.list; },
+  load(){ const v = Storage.read(STORAGE_KEYS.PROFILES, []); this.list = isArray(v) ? v.filter(isObject) : []; return this.list; },
   save(){ if (!Storage.write(STORAGE_KEYS.PROFILES, this.list)) UI.toast('تعذّر حفظ البيانات', 'err'); },
   add(name){
     const p = { id: newId('p'), name, createdAt: new Date().toISOString(), config: deepClone(Config.get()) };

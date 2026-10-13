@@ -5,6 +5,7 @@
 
 const UI = {
   modalConfirmCallback: null,
+  _lastFocus: null,
   toast(msg, type){
     const box = document.getElementById('toasts');
     while (box.children.length >= 3) box.firstChild.remove();
@@ -27,6 +28,7 @@ const UI = {
     confirmBtn.className = 'btn' + (danger ? ' danger' : '');
     cancelBtn.textContent = cancelLabel;
     this.modalConfirmCallback = onConfirm || null;
+    this._lastFocus = document.activeElement || null;
     document.getElementById('modalBackdrop').hidden = false;
     setTimeout(() => {
       const focusEl = document.querySelector('#modalBody input:not([type=checkbox]):not([type=radio]), #modalBody select, #modalBody textarea');
@@ -37,6 +39,9 @@ const UI = {
   hideModal(){
     document.getElementById('modalBackdrop').hidden = true;
     this.modalConfirmCallback = null;
+    /* ponytail: best-effort focus restore; no-op if a render already replaced the node */
+    const lf = this._lastFocus; this._lastFocus = null;
+    if (lf && document.contains?.(lf)){ try { lf.focus(); } catch(e){} }
   },
   isModalOpen(){ return !document.getElementById('modalBackdrop').hidden; },
   showLoading(show){ document.getElementById('loadingOverlay').hidden = !show; },
