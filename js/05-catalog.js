@@ -32,7 +32,6 @@ const Catalog = {
   list: [], index: new Map(),
   rebuild(){ this.index = new Map(); this.list.forEach(i => this.index.set(i.id, i)); },
   get(id){ return this.index.get(id); },
-  getAll(){ return this.list; },
   has(id){ return this.index.has(id); },
 
   hydrate(savedList){
@@ -100,12 +99,6 @@ const Catalog = {
     const lims = Config.get()?.ingredientUsageLimits;
     if (lims && id in lims) delete lims[id];
     return this.list.length < before;
-  },
-  update(id, field, value){
-    const ing = this.get(id);
-    if (!ing) return false;
-    ing[field] = value;
-    return true;
   },
   reset(){ this.list = buildSeedIngredients(); this.rebuild(); },
   nextId(){

@@ -184,17 +184,10 @@ document.addEventListener('click', function(e){
     case 'copy-json': {
       const ta = document.getElementById('jsonEditor');
       if (!ta) return;
-      const done = () => UI.toast('تم النسخ', 'ok');
-      const fail = () => UI.toast('تعذّر النسخ', 'err');
-      if (navigator.clipboard?.writeText){
-        navigator.clipboard.writeText(ta.value).then(done, () => {
-          try { ta.select(); document.execCommand('copy'); done(); }
-          catch(e){ fail(); }
-        });
-      } else {
-        try { ta.select(); document.execCommand('copy'); done(); }
-        catch(e){ fail(); }
-      }
+      if (!navigator.clipboard?.writeText){ UI.toast('تعذّر النسخ', 'err'); return; }
+      navigator.clipboard.writeText(ta.value).then(
+        () => UI.toast('تم النسخ', 'ok'),
+        () => UI.toast('تعذّر النسخ', 'err'));
       return;
     }
 
@@ -294,7 +287,7 @@ document.addEventListener('change', function(e){
     else if (el.type === 'number') val = parseFloat(el.value);
     else val = el.value;
     if (el.type === 'number'){
-      if (!isNum(val)){ UI.toast('قيمة غير صالحة', 'err'); return; }
+      if (!isNum(val)){ UI.toast('قيمة غير صالحة', 'err'); render(); return; }
       if (path === 'mealCount') val = clamp(val, 1, 50);
       if (path === 'minIngredientsPerMeal') val = clamp(val, 1, 30);
       if (path === 'decimalPlaces') val = clamp(val, 0, 4);
@@ -306,13 +299,24 @@ document.addEventListener('change', function(e){
       if (path === 'quantityDefaults.defaultQty') val = clamp(val, 1, 50);
       if (path === 'quantityDefaults.maxQty') val = clamp(val, 1, 50);
       if (path === 'behavior.toastDurationMs') val = clamp(val, 500, 20000);
+      if (path === 'bread.qtyWithPastry' || path === 'bread.qtyWithoutPastry') val = clamp(val, 0, 20);
+      if (path === 'triangleCheese.qty') val = clamp(val, 0, 20);
+      if (path === 'nutritionBalance.perMeal.maxHighSugar' || path === 'nutritionBalance.perMeal.maxHighSodium') val = clamp(val, 0, 10);
+      if (path === 'nutritionBalance.planWide.minRatio' || path === 'nutritionBalance.planWide.maxRatio') val = Math.max(0, val);
       if (['minMealCost','maxMealCost','targetMealAvg'].includes(path)) val = Math.max(0, round2(val));
-      if (path === 'minMealCost' && val > Config.get().maxMealCost){ UI.toast('الحد الأدنى أكبر من الأقصى', 'err'); return; }
-      if (path === 'maxMealCost' && val < Config.get().minMealCost){ UI.toast('الحد الأقصى أصغر من الأدنى', 'err'); return; }
+      if (path === 'minMealCost' && val > Config.get().maxMealCost){ UI.toast('الحد الأدنى أكبر من الأقصى', 'err'); render(); return; }
+      if (path === 'maxMealCost' && val < Config.get().minMealCost){ UI.toast('الحد الأقصى أصغر من الأدنى', 'err'); render(); return; }
     }
     Config.set(path, val);
     applyAppChrome();
     render();
+    const again = Array.from(document.querySelectorAll('[data-cfg]')).find(x => x.getAttribute('data-cfg') === path);
+    if (again){
+      again.focus();
+      if (again.type === 'text' || again.type === 'number' || again.tagName === 'TEXTAREA'){
+        try { again.select(); } catch(e){}
+      }
+    }
     UI.toast('تم الحفظ', 'ok');
     return;
   }
@@ -339,6 +343,14 @@ document.addEventListener('input', function(e){
 
 document.addEventListener('keydown', function(e){
   if (e.key === 'Escape' && UI.isModalOpen()){ e.preventDefault(); UI.hideModal(); return; }
+  if (e.key === 'Tab' && UI.isModalOpen()){
+    const f = Array.from(document.querySelectorAll('#modalBackdrop button, #modalBackdrop input, #modalBackdrop select, #modalBackdrop textarea')).filter(el => !el.disabled);
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    return;
+  }
   if (e.key === 'Enter' && UI.isModalOpen() && !e.shiftKey){
     const tag = (e.target.tagName || '').toLowerCase();
     if (tag === 'textarea') return;
@@ -348,6 +360,22 @@ document.addEventListener('keydown', function(e){
   }
 });
 
+let printOpen = null;
+window.addEventListener('beforeprint', function(){
+  printOpen = new Set();
+  document.querySelectorAll('#view details.cfg-section').forEach(d => {
+    if (d.open) printOpen.add(d.querySelector('summary')?.textContent);
+    d.open = true;
+  });
+});
+window.addEventListener('afterprint', function(){
+  if (!printOpen) return;
+  const keep = printOpen; printOpen = null;
+  document.querySelectorAll('#view details.cfg-section').forEach(d => {
+    d.open = keep.has(d.querySelector('summary')?.textContent);
+  });
+});
+
 /* =====================================================================
    §19 — BOOT
    ===================================================================== */
@@ -355,7 +383,7 @@ document.addEventListener('keydown', function(e){
 function boot(){
   Config.load();
   State.load();
-  Catalog.hydrate(State.current.ingredients);
+  if (!Catalog.list.length) Catalog.hydrate(State.current.ingredients);
   Profiles.load();
   State.current.ingredients = Catalog.list;
   if (!location.hash) location.hash = '#/dashboard';

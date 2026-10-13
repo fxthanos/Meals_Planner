@@ -95,6 +95,14 @@ function normalizeConfig(stored){
   merged.quantityDefaults.maxQty = clamp(merged.quantityDefaults.maxQty, 1, 50);
   merged.behavior.toastDurationMs = clamp(merged.behavior.toastDurationMs, 500, 20000);
 
+  merged.bread.qtyWithPastry = clamp(merged.bread.qtyWithPastry, 0, 20);
+  merged.bread.qtyWithoutPastry = clamp(merged.bread.qtyWithoutPastry, 0, 20);
+  merged.triangleCheese.qty = clamp(merged.triangleCheese.qty, 0, 20);
+  merged.nutritionBalance.perMeal.maxHighSugar = clamp(merged.nutritionBalance.perMeal.maxHighSugar, 0, 10);
+  merged.nutritionBalance.perMeal.maxHighSodium = clamp(merged.nutritionBalance.perMeal.maxHighSodium, 0, 10);
+  merged.nutritionBalance.planWide.minRatio = Math.max(0, Number(merged.nutritionBalance.planWide.minRatio) || 0);
+  merged.nutritionBalance.planWide.maxRatio = Math.max(merged.nutritionBalance.planWide.minRatio, Number(merged.nutritionBalance.planWide.maxRatio) || 0);
+
   enforceChipsInvariant(merged);
 
   if (!isArray(merged.exclusiveGroups)) merged.exclusiveGroups = def.exclusiveGroups.map(g => g.slice());
@@ -121,7 +129,7 @@ const Config = {
   save(){
     if (!this.current) return;
     if (this.current.behavior?.autoSave === false) return;
-    Storage.write(STORAGE_KEYS.CONFIG, this.current);
+    if (!Storage.write(STORAGE_KEYS.CONFIG, this.current)) UI.toast('تعذّر حفظ البيانات', 'err');
   },
   get(){ return this.current; },
   set(path, value){

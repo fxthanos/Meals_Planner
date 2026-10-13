@@ -43,7 +43,9 @@ function render(){
     });
   }
   document.querySelectorAll('.tabs a').forEach(a => {
-    a.classList.toggle('active', a.getAttribute('data-nav') === route);
+    const on = a.getAttribute('data-nav') === route;
+    a.classList.toggle('active', on);
+    if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
 }
 window.addEventListener('hashchange', render);

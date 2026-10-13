@@ -127,9 +127,9 @@ const Renderer = {
   </div>
   <div class="table-wrap">
     <table>
-      <thead><tr><th>المعرّف</th><th>الاسم</th><th>السعر</th><th>الوحدة</th>
-        <th>التصنيف</th><th>الفئة</th><th>العائلة</th>
-        <th>الوسوم والتصنيف الغذائي</th><th>التغطية</th><th>إجراءات</th></tr></thead>
+      <thead><tr><th scope="col">المعرّف</th><th scope="col">الاسم</th><th scope="col">السعر</th><th scope="col">الوحدة</th>
+        <th scope="col">التصنيف</th><th scope="col">الفئة</th><th scope="col">العائلة</th>
+        <th scope="col">الوسوم والتصنيف الغذائي</th><th scope="col">التغطية</th><th scope="col">إجراءات</th></tr></thead>
       <tbody>${rows || '<tr><td colspan="10" class="empty-state">لا توجد نتائج.</td></tr>'}</tbody>
     </table>
   </div>
@@ -193,7 +193,7 @@ const Renderer = {
   ${ruleChips ? `<div class="rule-chips">${ruleChips}</div>` : ''}
   ${disp.showBreakdown === false ? '' : `
   <table class="breakdown">
-    <thead><tr><th>المكوّن</th><th>سعر الوحدة</th><th>الكمية</th><th>الإجمالي</th></tr></thead>
+    <thead><tr><th scope="col">المكوّن</th><th scope="col">سعر الوحدة</th><th scope="col">الكمية</th><th scope="col">الإجمالي</th></tr></thead>
     <tbody>${breakdownRows}</tbody>
     <tfoot>
       <tr><td colspan="3">إجمالي الوجبة</td><td>${r.cost.toFixed(cfg.decimalPlaces)}</td></tr>
@@ -363,8 +363,6 @@ const Renderer = {
     <p class="small muted">الشيبسي مكوّن أساسي يظهر في كل وجبة مرة واحدة بالضبط. لا علاقة له بعبوة الشويبس (المشروب الغازي) — كل منهما مستقل تمامًا.</p>
     <div class="settings-grid">
       ${multi('مكونات الشيبسي', c.chips.ids, 'chips.ids')}
-      ${fld('مطلوب في كل وجبة', `<input type="checkbox" data-cfg="chips.required" ${c.chips.required ? 'checked' : ''}>`)}
-      ${fld('عنصر واحد بالضبط', `<input type="checkbox" data-cfg="chips.exactlyOne" ${c.chips.exactlyOne ? 'checked' : ''}>`)}
     </div>`)}
   ${sec('📊 حدود استخدام المكونات', `
     <p class="small muted">عند تحديد حد لمكوّن، لن يظهر في أكثر من هذا العدد من الوجبات. 0 = منع كامل. الشيبسي مستثنى لأنه إلزامي.</p>

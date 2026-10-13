@@ -29,7 +29,7 @@ const State = {
     if (!this.current) return;
     const cfg = Config.get();
     if (cfg?.behavior?.autoSave === false) return;
-    Storage.write(STORAGE_KEYS.STATE, this.current);
+    if (!Storage.write(STORAGE_KEYS.STATE, this.current)) UI.toast('تعذّر حفظ البيانات', 'err');
   },
   get(){ return this.current; },
   setMeals(meals){ this.current.meals = meals; this.save(); },
@@ -57,7 +57,7 @@ const State = {
 const Profiles = {
   list: [],
   load(){ this.list = Storage.read(STORAGE_KEYS.PROFILES, []) || []; return this.list; },
-  save(){ Storage.write(STORAGE_KEYS.PROFILES, this.list); },
+  save(){ if (!Storage.write(STORAGE_KEYS.PROFILES, this.list)) UI.toast('تعذّر حفظ البيانات', 'err'); },
   add(name){
     const p = { id: newId('p'), name, createdAt: new Date().toISOString(), config: deepClone(Config.get()) };
     this.list.push(p); this.save(); return p;
