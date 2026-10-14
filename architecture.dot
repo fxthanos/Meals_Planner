@@ -1,0 +1,270 @@
+digraph meals_planner_architecture {
+  graph [
+    label="Meals Planner - Application Architecture",
+    labelloc="t",
+    fontsize=24,
+    fontname="Arial",
+    rankdir="LR",
+    splines="ortho",
+    nodesep=0.45,
+    ranksep=1.1,
+    pad=0.35,
+    bgcolor="#f7faf9",
+    compound=true,
+    newrank=true
+  ];
+
+  node [
+    shape="box",
+    style="rounded,filled",
+    fontname="Arial",
+    fontsize=11,
+    margin="0.18,0.12",
+    color="#9ab9b1",
+    fillcolor="#ffffff",
+    fontcolor="#173b35",
+    penwidth=1.2
+  ];
+
+  edge [
+    fontname="Arial",
+    fontsize=9,
+    color="#53756d",
+    fontcolor="#36574f",
+    arrowsize=0.7,
+    penwidth=1.1
+  ];
+
+  subgraph cluster_legend {
+    label="Legend";
+    style="rounded,filled";
+    color="#d4e5e0";
+    fillcolor="#edf6f3";
+    fontsize=12;
+    legend_flow [label="solid: invokes or renders", shape="plaintext", fillcolor="transparent"];
+    legend_data [label="dashed: reads or writes data", shape="plaintext", fillcolor="transparent"];
+    legend_event [label="dotted: browser event or DOM dependency", shape="plaintext", fillcolor="transparent"];
+    legend_flow -> legend_data [style="invis"];
+    legend_data -> legend_event [style="invis"];
+  }
+
+  subgraph cluster_shell {
+    label="Static App Shell";
+    style="rounded,filled";
+    color="#9ab9b1";
+    fillcolor="#eaf5f2";
+
+    index_html [label="index.html\nRTL document shell\nheader, navigation, modal, loading, file inputs", fillcolor="#d9eee8"];
+    css [label="css/app.css\nresponsive visual system\nprint and motion rules", fillcolor="#d9eee8"];
+    dom [label="Browser DOM\n#view, navigation, dialogs, file inputs", shape="ellipse", fillcolor="#ffffff"];
+    index_html -> css [label="loads"];
+    index_html -> dom [label="creates"];
+  }
+
+  subgraph cluster_boot_routing {
+    label="Boot, Routing, and Event Delegation (js/app.js)";
+    style="rounded,filled";
+    color="#85aaa0";
+    fillcolor="#edf6f3";
+
+    app_script [label="app.js\napplication composition root", fillcolor="#d9eee8"];
+    boot [label="boot()\nloads app state\nhydrates catalog\nsets default route\nrenders initial view"];
+    router [label="currentRoute()\n#/dashboard | #/catalog | #/meals\n#/settings | #/log"];
+    chrome [label="applyAppChrome()\napp title\nmotion preference"];
+    render [label="render()\nroutes to Renderer\npreserves settings disclosure state\nmarks active navigation"];
+    events [label="Document event delegation\nclick, change, input, keydown\nprint lifecycle"];
+    actions [label="Actions\ngenerate, export, import\nreset, validateAll"];
+
+    app_script -> boot [label="DOMContentLoaded"];
+    app_script -> router;
+    app_script -> chrome;
+    app_script -> render;
+    app_script -> events;
+    events -> actions [label="action events"];
+    router -> render [label="hashchange"];
+    chrome -> render [label="before each render", dir="back"];
+    render -> dom [label="writes #view"];
+    events -> dom [style="dotted", label="listens"];
+  }
+
+  subgraph cluster_presentation {
+    label="Presentation and Editing (js/render.js)";
+    style="rounded,filled";
+    color="#8bb0a6";
+    fillcolor="#f1f8f6";
+
+    render_script [label="render.js\npresentation module", fillcolor="#d9eee8"];
+    renderer [label="Renderer\ndashboard, catalog, meals\nsettings, log"];
+    ui [label="UI\ntoasts, modal, loading\ningredient pickers\nvalidation logging"];
+    modals [label="Modals\ningredients, price, tags\ncustom rules, profiles\nsettings import/export"];
+    view_state [label="ui state\nsearch, filters\nactive meal editor\nsearch debounce"];
+    modal_dom [label="Modal and toast DOM\n#modalBackdrop, #toasts\n#loadingOverlay", shape="ellipse", fillcolor="#ffffff"];
+
+    render_script -> renderer;
+    render_script -> ui;
+    render_script -> modals;
+    render_script -> view_state;
+    render -> renderer [label="select view"];
+    renderer -> view_state [style="dashed", label="reads"];
+    renderer -> dom [label="HTML output"];
+    ui -> modal_dom [label="updates"];
+    modals -> ui [label="opens dialogs"];
+    events -> modals [label="modal actions"];
+    events -> ui [label="modal confirm/cancel"];
+  }
+
+  subgraph cluster_domain {
+    label="Domain Rules and Planning Engine (js/state.js)";
+    style="rounded,filled";
+    color="#74a397";
+    fillcolor="#edf7f4";
+
+    state_script [label="state.js\ndata, domain, persistence", fillcolor="#d9eee8"];
+    constants [label="Constants and seed data\n33 ingredients\nmetadata, tags, rule names"];
+    helpers [label="Shared helpers\nformatting, escaping, clone/merge\nRNG, IDs, import/export\nmutateMeal"];
+    builtin_rules [label="BUILTIN_RULES\ncomposition, chips, bread\nexclusions, salad, cheese\ntahini, nutrition, cost"];
+    custom_rules [label="CustomRules\nblock candidates\nrequired additions\nrule violations"];
+    validation [label="Validation\nmeal() and plan()\nerrors, warnings, costs\ncoverage and target delta"];
+    generation [label="Generation\nplan additions\nmeal construction\nusage limits and tuning\nseeded plan attempts"];
+    derived [label="Catalog derivations\nfamily, cheese, usage limit\nitem and meal cost"];
+
+    state_script -> constants;
+    state_script -> helpers;
+    state_script -> builtin_rules;
+    state_script -> custom_rules;
+    state_script -> validation;
+    state_script -> generation;
+    state_script -> derived;
+    constants -> builtin_rules [style="dashed", label="rule IDs and tags"];
+    constants -> generation [style="dashed", label="seed defaults"];
+    helpers -> generation [style="dashed", label="RNG and counts"];
+    derived -> builtin_rules [style="dashed", label="catalog semantics"];
+    builtin_rules -> validation [label="validates"];
+    custom_rules -> validation [label="validates"];
+    builtin_rules -> generation [label="candidate constraints"];
+    custom_rules -> generation [label="candidate constraints"];
+    derived -> validation [label="cost and limits"];
+    derived -> generation [label="cost and limits"];
+    validation -> generation [label="accepts or rejects meals", dir="back"];
+  }
+
+  subgraph cluster_models {
+    label="Application State and Managers (js/state.js)";
+    style="rounded,filled";
+    color="#88aaa1";
+    fillcolor="#f3f8f6";
+
+    storage [label="Storage\nJSON read/write/remove\nclear owned keys"];
+    config [label="Config\ndefaults, normalization\nchips invariant\nsettings persistence"];
+    catalog [label="Catalog\nhydrate seed and saved data\nindex, add, remove, reset"];
+    state [label="State\ningredients, meals, log\nprice audit\nauto-save and reset"];
+    profiles [label="Profiles\nsaved config snapshots\nload, rename, import/export"];
+    normalized_config [label="Normalized configuration", shape="cylinder", fillcolor="#ffffff"];
+    catalog_data [label="Ingredient catalog", shape="cylinder", fillcolor="#ffffff"];
+    plan_data [label="Plan state\nmeals, audit trail, logs", shape="cylinder", fillcolor="#ffffff"];
+
+    constants -> config [label="defaults"];
+    constants -> catalog [label="seed metadata"];
+    helpers -> config [label="clone/merge/clamp"];
+    helpers -> catalog [label="type checks/clamp"];
+    config -> normalized_config [label="owns", style="dashed"];
+    catalog -> catalog_data [label="owns", style="dashed"];
+    state -> plan_data [label="owns", style="dashed"];
+    config -> catalog [style="dashed", label="usage and rule config"];
+    catalog -> state [style="dashed", label="hydrates ingredients"];
+    config -> profiles [style="dashed", label="snapshots"];
+    catalog -> derived [label="lookup"];
+    config -> derived [label="limits"];
+    config -> builtin_rules [label="rule settings"];
+    config -> custom_rules [label="custom rules"];
+    config -> validation [label="constraints"];
+    catalog -> validation [label="ingredients"];
+    config -> generation [label="generation settings"];
+    catalog -> generation [label="candidate list"];
+    state -> validation [label="meals"];
+    state -> generation [label="replaces meals", dir="back"];
+  }
+
+  subgraph cluster_browser_apis {
+    label="Browser Platform Services";
+    style="rounded,filled";
+    color="#aebdc3";
+    fillcolor="#f3f7f8";
+
+    local_storage [label="localStorage\nthree versioned keys", shape="cylinder", fillcolor="#ffffff"];
+    file_api [label="FileReader\nJSON file import", shape="component", fillcolor="#ffffff"];
+    download_api [label="Blob + URL API\nJSON file export", shape="component", fillcolor="#ffffff"];
+    clipboard [label="Clipboard API\ncopy JSON settings", shape="component", fillcolor="#ffffff"];
+    print_api [label="window.print()\nbeforeprint / afterprint", shape="component", fillcolor="#ffffff"];
+    location_api [label="location.hash\nclient-side routing", shape="component", fillcolor="#ffffff"];
+
+    storage -> local_storage [style="dashed", label="JSON persistence"];
+    helpers -> file_api [style="dashed", label="readJsonFile"];
+    helpers -> download_api [style="dashed", label="downloadJson"];
+    events -> clipboard [style="dotted", label="copy JSON"];
+    events -> print_api [style="dotted", label="print events"];
+    actions -> location_api [style="dotted", label="route after generation"];
+    router -> location_api [style="dotted", label="reads hash"];
+  }
+
+  subgraph cluster_user_flows {
+    label="Primary User Flows";
+    style="rounded,filled";
+    color="#d2b274";
+    fillcolor="#fff8e8";
+
+    generate_flow [label="Generate plan\nuser requests plan"];
+    edit_flow [label="Edit meal or catalog\nuser changes a value"];
+    settings_flow [label="Change settings or profile\nuser changes configuration"];
+    transfer_flow [label="Import or export JSON\nuser selects or downloads file"];
+
+    generate_flow -> actions [label="Generate"];
+    actions -> ui [label="show loading"];
+    actions -> generation [label="run()"];
+    generation -> state [label="setMeals()"];
+    actions -> validation [label="log plan result"];
+    actions -> ui [label="toast and render"];
+
+    edit_flow -> events [label="delegated input/action"];
+    events -> helpers [label="mutateMeal()"];
+    helpers -> state [label="save changed meal"];
+    helpers -> validation [label="log meal validation"];
+    events -> catalog [label="edit catalog fields"];
+    events -> config [label="save settings"];
+    events -> render [label="refresh affected view"];
+
+    settings_flow -> events [label="delegated setting action"];
+    events -> modals [label="pick/edit/import"];
+    modals -> config [label="save or load config"];
+    modals -> profiles [label="manage snapshots"];
+    config -> render [label="rerender"];
+
+    transfer_flow -> events [label="file controls"];
+    events -> actions [label="plan import/export"];
+    events -> modals [label="settings/profile transfer"];
+    actions -> helpers [label="read/download JSON"];
+    modals -> helpers [label="read/download JSON"];
+    helpers -> state [label="import state"];
+    helpers -> config [label="import config"];
+    helpers -> profiles [label="import profile"];
+  }
+
+  index_html -> state_script [label="loads first"];
+  state_script -> render_script [label="globals available"];
+  render_script -> app_script [label="globals available"];
+  boot -> config [label="load"];
+  boot -> state [label="load"];
+  boot -> catalog [label="hydrate if needed"];
+  boot -> profiles [label="load"];
+  boot -> render [label="initial page"];
+  renderer -> config [style="dashed", label="display settings"];
+  renderer -> catalog [style="dashed", label="ingredient display"];
+  renderer -> state [style="dashed", label="plans and logs"];
+  renderer -> validation [style="dashed", label="view model"];
+  ui -> state [label="validation log"];
+  modals -> catalog [label="edit ingredients"];
+  modals -> state [label="audit and save"];
+  actions -> state [label="plan import/export/reset"];
+  actions -> config [label="import settings"];
+  actions -> profiles [label="export profiles"];
+}

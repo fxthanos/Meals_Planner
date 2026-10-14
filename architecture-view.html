@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>معمارية مخطط الوجبات</title>
+<style>
+  :root{--ink:#173b35;--muted:#58716c;--line:#cfe0dc;--surface:#fff;--tint:#edf7f4;--brand:#0f7b6c;--gold:#b77908;--bg:#f3f8f6}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 "Segoe UI",Tahoma,system-ui,sans-serif}
+  header{padding:32px max(24px,calc((100vw - 1460px)/2));background:#0d4d44;color:#fff}
+  header p{margin:6px 0 0;color:#cde5df} h1{margin:0;font-size:clamp(26px,4vw,42px);letter-spacing:-.04em}
+  main{max-width:1500px;margin:auto;padding:28px 24px 48px}.legend{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:22px;color:var(--muted);font-size:12px;font-weight:700}
+  .legend span{display:flex;align-items:center;gap:7px}.key{width:24px;height:2px;background:#53756d}.key.dash{background:repeating-linear-gradient(90deg,#53756d 0 6px,transparent 6px 10px)}.key.dot{background:repeating-linear-gradient(90deg,#53756d 0 2px,transparent 2px 6px)}
+  .diagram{display:grid;grid-template-columns:repeat(6,minmax(220px,1fr));gap:18px;align-items:start;overflow-x:auto;padding-bottom:14px}.cluster{min-width:220px;border:1px solid var(--line);border-radius:18px;background:var(--surface);overflow:hidden;box-shadow:0 18px 36px -32px rgba(13,77,68,.45)}
+  .cluster h2{margin:0;padding:13px 15px;background:var(--tint);font-size:14px;color:#21564c}.node{position:relative;margin:10px;padding:11px 12px;border:1px solid #dceae7;border-radius:10px;background:#fff}.node strong{display:block;font-size:13px}.node small{display:block;margin-top:2px;color:var(--muted);font-size:11px;line-height:1.5}.node.accent{border-color:#a7d1c7;background:#f0f9f6}.node.data{border-style:dashed}.node.event{border-style:dotted}.link{padding:0 10px 8px;color:#397166;font-size:11px;font-weight:700;text-align:center}.link::before{content:"←";margin-left:5px;color:var(--brand)}
+  .flows{display:grid;grid-template-columns:repeat(4,minmax(240px,1fr));gap:16px;margin-top:26px}.flow{border-top:3px solid var(--brand);padding:14px 16px;background:#fff;border-radius:0 0 14px 14px;box-shadow:0 16px 30px -30px rgba(13,77,68,.4)}.flow.gold{border-color:var(--gold)}.flow h3{margin:0 0 6px;font-size:14px}.flow p{margin:0;color:var(--muted);font-size:12px}.flow code{font:11px Consolas,monospace;color:#245f53}
+  .source{margin-top:25px;padding:13px 15px;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:12px}.source a{color:var(--brand);font-weight:800;text-decoration:none}
+  @media(max-width:700px){header{padding:24px 16px}main{padding:18px 16px 32px}.diagram{grid-template-columns:repeat(6,minmax(260px,78vw))}.flows{grid-template-columns:1fr}.legend{gap:10px}}
+</style>
+</head>
+<body>
+<header><h1>معمارية مخطط الوجبات</h1><p>خريطة تنفيذية للواجهة، حالة التطبيق، محرك القواعد، التخزين، ومسارات المستخدم.</p></header>
+<main>
+  <div class="legend"><span><i class="key"></i>استدعاء أو عرض</span><span><i class="key dash"></i>قراءة أو كتابة بيانات</span><span><i class="key dot"></i>اعتماد على متصفح أو DOM</span></div>
+  <section class="diagram" aria-label="مخطط المعمارية">
+    <article class="cluster"><h2>الهيكل الثابت</h2><div class="node accent"><strong>index.html</strong><small>RTL shell, navigation, modal, loading overlay, file inputs</small></div><div class="node"><strong>css/app.css</strong><small>responsive UI, print rules, motion preferences</small></div><div class="node event"><strong>Browser DOM</strong><small>#view, #toasts, #modalBackdrop, file controls</small></div></article>
+    <article class="cluster"><h2>التشغيل والتوجيه</h2><div class="node accent"><strong>boot()</strong><small>loads config, state, catalog, profiles, then renders</small></div><div class="node"><strong>currentRoute() / render()</strong><small>hash routing, active tabs, view replacement</small></div><div class="node"><strong>Document events</strong><small>click, change, input, keyboard, print lifecycle</small></div><div class="node"><strong>Actions</strong><small>generate, validate, import, export, reset</small></div><div class="link">DOMContentLoaded and hashchange</div></article>
+    <article class="cluster"><h2>العرض والتحرير</h2><div class="node accent"><strong>Renderer</strong><small>dashboard, catalog, meals, settings, validation log</small></div><div class="node"><strong>UI</strong><small>toasts, modals, loading, ingredient pickers</small></div><div class="node"><strong>Modals</strong><small>ingredients, tags, prices, rules, profiles, imports</small></div><div class="node data"><strong>ui state</strong><small>search, filters, active editor, debounce timer</small></div><div class="link">rendered into #view</div></article>
+    <article class="cluster"><h2>منطق التخطيط</h2><div class="node accent"><strong>Generation</strong><small>seeded attempts, candidate placement, coverage, tuning, usage limits</small></div><div class="node"><strong>Validation</strong><small>meal and plan validity, violations, costs, coverage, target delta</small></div><div class="node"><strong>BUILTIN_RULES</strong><small>composition, chips, bread, exclusions, salad, cheese, tahini, nutrition, cost</small></div><div class="node"><strong>CustomRules</strong><small>candidate blocks, required additions, custom violations</small></div><div class="link">constraints and acceptance</div></article>
+    <article class="cluster"><h2>النموذج والحالة</h2><div class="node accent"><strong>Config</strong><small>defaults, normalization, rule and generation settings</small></div><div class="node"><strong>Catalog</strong><small>seed hydration, ingredient index, add, remove, reset</small></div><div class="node"><strong>State</strong><small>ingredients, meals, validation log, price audit, auto-save</small></div><div class="node"><strong>Profiles</strong><small>saved configuration snapshots</small></div><div class="node data"><strong>Derived helpers</strong><small>families, cheese semantics, usage limits, item and meal cost</small></div><div class="link">shared application model</div></article>
+    <article class="cluster"><h2>خدمات المتصفح</h2><div class="node data"><strong>localStorage</strong><small>versioned state, config, profile keys</small></div><div class="node event"><strong>FileReader</strong><small>JSON import</small></div><div class="node event"><strong>Blob + URL API</strong><small>JSON export</small></div><div class="node event"><strong>Clipboard API</strong><small>copy JSON settings</small></div><div class="node event"><strong>window.print()</strong><small>print and PDF workflow</small></div><div class="node event"><strong>location.hash</strong><small>client-side route state</small></div></article>
+  </section>
+  <section class="flows" aria-label="مسارات المستخدم الرئيسية">
+    <article class="flow"><h3>توليد الخطة</h3><p><code>Actions.generate</code> → loading UI → <code>Generation.run</code> → <code>State.setMeals</code> → <code>Validation.plan</code> → render and toast.</p></article>
+    <article class="flow"><h3>تعديل الوجبات والكتالوج</h3><p>Delegated event → <code>mutateMeal</code> or catalog update → save → validation log → render.</p></article>
+    <article class="flow gold"><h3>الإعدادات والبروفايلات</h3><p>Event or modal → <code>Config</code> / <code>Profiles</code> → persistence → rerender.</p></article>
+    <article class="flow gold"><h3>الاستيراد والتصدير</h3><p>File input → <code>FileReader</code> → normalize and save, or state/profile/config → <code>Blob</code> download.</p></article>
+  </section>
+  <p class="source">المصدر الكامل القابل للرسم موجود في <a href="architecture.dot">architecture.dot</a>. استخدم Graphviz لإنتاج SVG أو PNG عندما يكون <code>dot</code> متاحًا.</p>
+</main>
+</body>
+</html>
