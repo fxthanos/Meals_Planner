@@ -97,7 +97,7 @@ textarea{resize:vertical;min-height:80px;font-family:Consolas,Monaco,monospace;f
 .catalog-head .actions{justify-content:flex-start;align-self:center}
 .catalog-panel .btn{transition:transform .24s cubic-bezier(.16,1,.3,1),background .24s ease,border-color .24s ease,filter .24s ease}
 .catalog-panel .btn:active{transform:scale(.98)}
-.catalog-signal{display:grid;grid-template-columns:1.45fr 1fr .9fr;margin:0 30px;border-bottom:1px solid var(--line)}
+.catalog-signal{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(190px,1fr);margin:0 30px;overflow-x:auto;border-bottom:1px solid var(--line)}
 .catalog-signal>div{min-height:76px;padding:15px 18px;display:flex;flex-direction:column;justify-content:center;gap:1px;border-inline-start:1px solid var(--line)}
 .catalog-signal>div:first-child{border-inline-start:0;padding-inline-start:0}
 .catalog-signal span{color:var(--muted);font-size:11.5px;font-weight:700}
@@ -136,7 +136,7 @@ textarea{resize:vertical;min-height:80px;font-family:Consolas,Monaco,monospace;f
 .catalog-actions .btn + .btn{margin-inline-start:4px}
 .catalog-audit{display:grid;grid-template-columns:minmax(180px,.42fr) minmax(0,1fr);gap:28px;margin-top:25px;padding:23px 30px 28px;background:#f7faf9;border-top:1px solid var(--line)}
 .catalog-audit h3{margin:0;color:#173b35;font-size:17px}
-.catalog-audit ul{list-style:none;margin:0;padding:0;border-top:1px solid #dce8e5}
+.catalog-audit ul{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(280px,1fr);overflow-x:auto;list-style:none;margin:0;padding:0;border-top:1px solid #dce8e5}
 .catalog-audit li{padding:10px 0;border-bottom:1px solid #dce8e5;color:#4a615d;line-height:1.55}
 @keyframes catalog-pulse{50%{transform:scale(.82);opacity:.72}}
 @keyframes catalog-reveal{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
@@ -151,7 +151,7 @@ textarea{resize:vertical;min-height:80px;font-family:Consolas,Monaco,monospace;f
 .dashboard-stats .stat-primary strong small{font-size:16px;color:#4f6e67;font-weight:650;letter-spacing:0}
 .dashboard-meals{display:grid;grid-template-columns:minmax(180px,.38fr) minmax(0,1fr);gap:28px;padding:20px 0 28px;border-top:1px solid var(--line)}
 .dashboard-meals h3{margin:0;color:#173b35;font-size:17px}
-.dashboard-meals .meal-chips{align-content:start}
+.dashboard-meals .meal-chips{flex-wrap:nowrap;overflow-x:auto;align-content:start;padding-bottom:4px}
 .meals-panel>.meals-grid{padding:23px 30px 30px}
 .meals-panel .workspace-head{border-bottom:1px solid var(--line)}
 .meals-panel .meal-card{position:relative;box-shadow:none;padding:17px;border-radius:16px;transition:transform .24s cubic-bezier(.16,1,.3,1),box-shadow .24s ease,border-color .24s ease;animation:meal-reveal .45s cubic-bezier(.16,1,.3,1) both}
@@ -168,6 +168,10 @@ textarea{resize:vertical;min-height:80px;font-family:Consolas,Monaco,monospace;f
 .empty-state p{margin:7px 0 19px;color:var(--muted)}
 .settings-panel>.small{display:block;margin:0;padding:14px 30px;background:#f3f8f6;border-bottom:1px solid var(--line)}
 .settings-panel .cfg-section{margin:0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:#fff}
+.settings-sections{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(360px,520px);align-items:start;overflow-x:auto;border-bottom:1px solid var(--line)}
+.settings-sections .cfg-section{height:100%;border-bottom:0;border-inline-start:1px solid var(--line)}
+.settings-sections .cfg-section:first-child{border-inline-start:0}
+.settings-sections .cfg-section[open] .cfg-body{max-height:calc(100dvh - 250px);overflow:auto}
 .settings-panel .cfg-section>summary{padding:16px 30px;background:#fff;color:#254b44;transition:background .2s ease,color .2s ease}
 .settings-panel .cfg-section>summary:hover,.settings-panel .cfg-section[open]>summary{background:#f2f8f6}
 .settings-panel .cfg-body{padding:20px 30px 24px;background:#f9fcfb}
@@ -178,7 +182,7 @@ textarea{resize:vertical;min-height:80px;font-family:Consolas,Monaco,monospace;f
 .settings-panel .group-row,.settings-panel .rule-card,.settings-panel .profile-row{box-shadow:0 10px 20px -22px rgba(13,77,68,.36)}
 .settings-panel .rule-card,.settings-panel .profile-row{text-align:center;justify-content:center}
 .settings-panel .rule-head,.settings-panel .rule-actions{justify-content:center}
-.log-panel>.log-list{padding:22px 30px 30px}
+.log-panel>.log-list{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(320px,440px);align-items:start;overflow-x:auto;padding:22px 30px 30px}
 .log-panel .log-item{padding:14px 16px;background:#fff;text-align:center;box-shadow:0 12px 24px -24px rgba(13,77,68,.38);transition:transform .2s cubic-bezier(.16,1,.3,1),border-color .2s ease}
 .log-panel .log-item:hover{transform:translateY(-2px);border-color:#bddbd4}
 .log-panel .log-head strong{color:#173b35}
@@ -333,17 +337,18 @@ textarea{resize:vertical;min-height:80px;font-family:Consolas,Monaco,monospace;f
   .meals-panel>.meals-grid{padding:16px}
   .meal-empty .empty-state{padding:58px 20px 66px}
   .settings-panel>.small{padding:13px 16px}
+  .settings-sections{grid-auto-columns:minmax(300px,84vw)}
   .settings-panel .cfg-section>summary{padding:14px 16px}
   .settings-panel .cfg-body{padding:16px}
   .settings-panel .settings-grid{grid-template-columns:1fr}
-  .log-panel>.log-list{padding:16px}
+  .log-panel>.log-list{grid-auto-columns:minmax(280px,84vw);padding:16px}
   .catalog-head{grid-template-columns:1fr;gap:18px;padding:22px 16px 18px}
   .catalog-head .actions{align-self:stretch}
   .catalog-head .actions .btn{flex:1 1 150px}
-  .catalog-signal{grid-template-columns:1fr 1fr;margin:0 16px}
+  .catalog-signal{grid-auto-columns:minmax(150px,62vw);margin:0 16px}
   .catalog-signal>div{min-height:64px;padding:12px 10px}
   .catalog-signal>div:first-child{padding-inline-start:0}
-  .catalog-signal>div:last-child{grid-column:1 / -1;border-inline-start:0;border-top:1px solid var(--line);padding-inline-start:0}
+  .catalog-signal>div:last-child{border-inline-start:1px solid var(--line);padding-inline-start:10px}
   .catalog-filters{grid-template-columns:1fr;padding:16px}
   .catalog-table-wrap{padding:16px 16px 0}
   .catalog-table-note{padding-bottom:8px}
