@@ -975,12 +975,14 @@ const Validation = {
         if (['high','medium'].includes(ing.nutrition.sugar)) sugar++;
         if (['high','medium'].includes(ing.nutrition.sodium)) sodium++;
       }));
-      const ratio = sodium > 0 ? sugar / sodium : Infinity;
-      const { minRatio, maxRatio } = cfg.nutritionBalance.planWide;
-      if (ratio < minRatio) v.push({ code:'NUT_RATIO_LOW', ruleId:'NUT', severity:SEVERITY.WARNING,
-        messageAr:`نسبة السكري/الصوديوم ${ratio.toFixed(2)} أقل من الحد ${minRatio}` });
-      else if (ratio > maxRatio) v.push({ code:'NUT_RATIO_HIGH', ruleId:'NUT', severity:SEVERITY.WARNING,
-        messageAr:`نسبة السكري/الصوديوم ${ratio.toFixed(2)} أعلى من الحد ${maxRatio}` });
+      if (sugar || sodium){
+        const ratio = sodium > 0 ? sugar / sodium : Infinity;
+        const { minRatio, maxRatio } = cfg.nutritionBalance.planWide;
+        if (ratio < minRatio) v.push({ code:'NUT_RATIO_LOW', ruleId:'NUT', severity:SEVERITY.WARNING,
+          messageAr:`نسبة السكري/الصوديوم ${ratio.toFixed(2)} أقل من الحد ${minRatio}` });
+        else if (ratio > maxRatio) v.push({ code:'NUT_RATIO_HIGH', ruleId:'NUT', severity:SEVERITY.WARNING,
+          messageAr:`نسبة السكري/الصوديوم ${ratio.toFixed(2)} أعلى من الحد ${maxRatio}` });
+      }
     }
     const total = round2(meals.reduce((s, m) => s + itemsCost(m.items), 0));
     const average = meals.length ? round2(total / meals.length) : 0;
