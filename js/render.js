@@ -147,9 +147,11 @@ const Renderer = {
       }
       return true;
     });
+    const coveredCount = Catalog.list.filter(g => coverage[g.id] > 0).length;
+    const activeFilters = [q, ui.classFilter, ui.tagFilter].filter(Boolean).length;
     const tagOptions = `<option value="">كل الوسوم</option>` + ALL_TAGS.map(t =>
       `<option value="${escapeHtml(t)}" ${ui.tagFilter === t ? 'selected' : ''}>${escapeHtml(TAG_LABELS[t])}</option>`).join('');
-    const rows = list.map(g => {
+    const rows = list.map((g, index) => {
       const clsOptions = CLASSIFICATIONS.map(c =>
         `<option value="${escapeHtml(c.v)}" ${(g.classification || '') === c.v ? 'selected' : ''}>${escapeHtml(c.l)}</option>`).join('');
       const cnt = coverage[g.id] || 0;
@@ -161,21 +163,21 @@ const Renderer = {
       const tagsLabel = (g.specialRules || []).length ? (g.specialRules || []).map(t => escapeHtml(TAG_LABELS[t] || t)).join('، ') : '<span class="muted">لا يوجد</span>';
       const nutLabel = g.nutrition ? `<span class="rule-chip">سكر: ${g.nutrition.sugar}</span> <span class="rule-chip">ملح: ${g.nutrition.sodium}</span>` : '';
       return `
-<tr>
-  <td class="muted small">${escapeHtml(g.id)}</td>
-  <td><input type="text" data-field="nameAr" data-id="${escapeHtml(g.id)}" value="${escapeHtml(g.nameAr)}" style="min-width:180px"></td>
-  <td class="price-cell">${g.price.toFixed(Config.get().decimalPlaces)} ${escapeHtml(Config.get().currencyLabel)}</td>
+<tr style="animation-delay:${Math.min(index, 12) * 35}ms">
+  <td class="catalog-id"><span>${escapeHtml(g.id)}</span></td>
+  <td class="catalog-name"><input type="text" aria-label="اسم ${escapeHtml(g.nameAr)}" data-field="nameAr" data-id="${escapeHtml(g.id)}" value="${escapeHtml(g.nameAr)}"></td>
+  <td class="price-cell catalog-price">${g.price.toFixed(Config.get().decimalPlaces)} <small>${escapeHtml(Config.get().currencyLabel)}</small></td>
   <td><input type="text" data-field="unit" data-id="${escapeHtml(g.id)}" value="${escapeHtml(g.unit || '')}" placeholder="غير محدد"></td>
   <td><select data-field="classification" data-id="${escapeHtml(g.id)}">${clsOptions}</select></td>
   <td><input type="text" data-field="category" data-id="${escapeHtml(g.id)}" value="${escapeHtml(g.category || '')}" placeholder="غير محدد"></td>
   <td><input type="text" data-field="family" data-id="${escapeHtml(g.id)}" value="${escapeHtml(g.family || '')}" placeholder="—"></td>
-  <td>
+  <td class="catalog-attributes">
     <button class="btn ghost tiny" data-act="edit-tags" data-id="${escapeHtml(g.id)}">الوسوم (${(g.specialRules || []).length})</button>
-    <div class="small muted" style="margin-top:4px">${tagsLabel}</div>
-    <div class="small muted" style="margin-top:2px">${nutLabel}</div>
+    <div class="catalog-tags">${tagsLabel}</div>
+    <div class="catalog-nutrition">${nutLabel}</div>
   </td>
-  <td>${covHtml}</td>
-  <td style="white-space:nowrap">
+  <td class="catalog-coverage">${covHtml}</td>
+  <td class="catalog-actions">
     <button class="btn ghost tiny" data-act="edit-price" data-id="${escapeHtml(g.id)}">السعر</button>
     <button class="btn danger tiny" data-act="delete-ing" data-id="${escapeHtml(g.id)}">حذف</button>
   </td>
@@ -186,17 +188,26 @@ const Renderer = {
           `<li class="small">${escapeHtml(new Date(a.ts).toLocaleString('ar-EG'))} — ${escapeHtml(a.nameAr)}: من ${formatMoney(a.oldPrice, Config.get())} إلى ${formatMoney(a.newPrice, Config.get())}</li>`).join('')
       : '<li class="small muted">لا توجد تعديلات مسجلة.</li>';
     return `
-<section class="panel">
-  <div class="panel-head">
-    <h2>كتالوج المكونات</h2>
+<section class="panel catalog-panel">
+  <div class="catalog-head">
+    <div class="catalog-title-block">
+      <span class="catalog-eyebrow"><span class="catalog-live-dot" aria-hidden="true"></span>مصدر الخطة</span>
+      <h2>كتالوج المكونات</h2>
+      <p>حرّر الأسعار والتصنيف وقواعد كل مكوّن من مساحة عمل واحدة.</p>
+    </div>
     <div class="actions no-print">
       <button class="btn" data-act="add-ing" type="button">إضافة مكوّن</button>
       <button class="btn ghost" data-act="restore-catalog" type="button">استعادة الكتالوج الأصلي</button>
       <button class="btn ghost" data-act="reset-catalog-filters" type="button">مسح الفلاتر</button>
     </div>
   </div>
-  <div class="filters no-print">
-    <div class="field"><label for="searchInput">بحث</label>
+  <div class="catalog-signal" aria-label="ملخص الكتالوج">
+    <div><span>إجمالي المكونات</span><strong>${Catalog.list.length}</strong></div>
+    <div><span>مغطاة في الخطة</span><strong>${coveredCount}<small> / ${Catalog.list.length}</small></strong></div>
+    <div><span>المعروض الآن</span><strong>${list.length}</strong>${activeFilters ? `<small>${activeFilters} فلتر مفعّل</small>` : ''}</div>
+  </div>
+  <div class="catalog-filters no-print">
+    <div class="field catalog-search"><label for="searchInput">بحث في الكتالوج</label>
       <input type="search" id="searchInput" value="${escapeHtml(ui.q)}" placeholder="اكتب للبحث…"></div>
     <div class="field"><label for="classFilter">التصنيف</label>
       <select id="classFilter"><option value="">كل التصنيفات</option>
@@ -206,16 +217,21 @@ const Renderer = {
     <div class="field"><label for="tagFilter">الوسوم</label>
       <select id="tagFilter">${tagOptions}</select></div>
   </div>
-  <div class="table-wrap">
-    <table>
+  <div class="catalog-table-wrap">
+    <div class="catalog-table-note"><span>تحرير مباشر</span><span>${list.length} من ${Catalog.list.length} مكوّن</span></div>
+    <div class="table-wrap">
+    <table class="catalog-table">
       <thead><tr><th scope="col">المعرّف</th><th scope="col">الاسم</th><th scope="col">السعر</th><th scope="col">الوحدة</th>
         <th scope="col">التصنيف</th><th scope="col">الفئة</th><th scope="col">العائلة</th>
         <th scope="col">الوسوم والتصنيف الغذائي</th><th scope="col">التغطية</th><th scope="col">إجراءات</th></tr></thead>
       <tbody>${rows || '<tr><td colspan="10" class="empty-state">لا توجد نتائج.</td></tr>'}</tbody>
     </table>
+    </div>
   </div>
-  <h3 style="font-size:15px;margin-top:18px">سجل تعديلات الأسعار</h3>
-  <ul style="list-style:none;padding:0;margin:0">${auditRows}</ul>
+  <section class="catalog-audit">
+    <div><span class="catalog-eyebrow">سجل المراجعة</span><h3>تعديلات الأسعار</h3></div>
+    <ul>${auditRows}</ul>
+  </section>
 </section>`;
   },
 
