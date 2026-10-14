@@ -160,8 +160,6 @@ textarea{resize:vertical;min-height:80px;font-family:Consolas,Monaco,monospace;f
 .meal-card h3{color:#153b35;font-size:16px}
 .meal-card .cost-badge{padding:5px 10px}
 .meal-card .rule-chips{padding-block:2px}
-.meal-card .breakdown th,.meal-card .breakdown td{text-align:center}
-.meal-card .editor h4,.meal-card .editor li{text-align:center}
 .meal-empty .empty-state{max-width:510px;margin:0 auto;padding:76px 20px 88px;text-align:right}
 .empty-state .empty-kicker{display:block;margin-bottom:8px;color:var(--brand-2);font-size:11px;font-weight:800;letter-spacing:.09em}
 .empty-state h3{margin:0;color:#173b35;font-size:24px;letter-spacing:-.035em}
@@ -232,17 +230,17 @@ textarea{resize:vertical;min-height:80px;font-family:Consolas,Monaco,monospace;f
   border-radius:10px; background:#fff; margin-bottom:8px; flex-wrap:wrap;}
 .profile-row .pname{flex:1 1 auto; font-weight:600; font-size:13.5px; min-width:140px}
 .profile-row .pdate{font-size:11.5px; color:var(--muted)}
-.meals-grid{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(345px,1fr);gap:16px;overflow-x:auto;padding-bottom:6px}
+.meals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(345px,1fr));gap:16px}
 .meal-card{border:1px solid var(--line); border-radius:14px; background:#fff; padding:14px;
-  display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px; border-inline-start:6px solid var(--ok);}
+  display:flex;flex-direction:column;gap:10px; border-inline-start:6px solid var(--ok);}
 .meal-card.bad{border-inline-start-color:var(--err);background:#fffdfd}
-.meal-card > header{display:flex;width:100%;align-items:center;justify-content:center;gap:16px}
+.meal-card > header{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .meal-card h3{font-size:16px;margin:0}
 .cost-badge{font-weight:700;font-size:14px;padding:4px 10px;border-radius:999px;
   background:#eef7f5;color:var(--brand-2);white-space:nowrap;}
 .cost-badge.bad{background:var(--err-bg);color:var(--err)}
 .cost-badge.warn{background:var(--warn-bg);color:var(--warn)}
-.rule-chips{display:flex;justify-content:center;flex-wrap:wrap;gap:5px}
+.rule-chips{display:flex;flex-wrap:wrap;gap:5px}
 .rule-chip{font-size:11.5px;padding:3px 8px;border-radius:999px;border:1px solid transparent;font-weight:600}
 .rule-chip.pass{background:var(--ok-bg);color:var(--ok);border-color:#bfe6cc}
 .rule-chip.fail{background:var(--err-bg);color:var(--err);border-color:#f3c2bd}
@@ -250,12 +248,12 @@ textarea{resize:vertical;min-height:80px;font-family:Consolas,Monaco,monospace;f
 .breakdown th{background:#f6fafc;padding:5px 6px;font-size:12px}
 .breakdown td{padding:4px 6px;border-bottom:1px solid #f0f4f8}
 .breakdown tfoot td{font-weight:700;background:#f6fafc;border-top:2px solid var(--line)}
-.violations{list-style:none;margin:0;padding:0;display:flex;width:100%;flex-direction:column;gap:5px}
+.violations{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
 .violations li{background:var(--err-bg);color:var(--err);border:1px solid #f3c2bd;
   border-radius:8px;padding:6px 9px;font-size:12.5px;}
 .violations li.warn{background:var(--warn-bg);color:var(--warn);border-color:#f0d9a8}
 .violations li.info{background:#e6f0fb;color:#0a66c2;border-color:#b8d4f0}
-.editor{width:100%;border-top:1px dashed var(--line);padding-top:10px;display:flex;flex-direction:column;gap:10px}
+.editor{border-top:1px dashed var(--line);padding-top:10px;display:flex;flex-direction:column;gap:10px}
 .editor ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 .editor li{display:flex;align-items:center;gap:8px;justify-content:space-between;font-size:13px}
 .editor li .name{flex:1 1 auto}
@@ -263,7 +261,7 @@ textarea{resize:vertical;min-height:80px;font-family:Consolas,Monaco,monospace;f
 .qty button{width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:#fff;
   cursor:pointer;font-size:15px;line-height:1;color:var(--ink);}
 .qty button:hover{background:#eef7f5}
-.add-row{display:flex;width:100%;gap:8px;align-items:center}
+.add-row{display:flex;gap:8px;align-items:center}
 .add-row select{flex:1 1 auto}
 #toasts{position:fixed;inset-inline-start:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:1200}
 .toast{background:#1d2a36;color:#fff;padding:10px 16px;border-radius:10px;font-size:13.5px;
@@ -315,7 +313,7 @@ textarea{resize:vertical;min-height:80px;font-family:Consolas,Monaco,monospace;f
 @media (max-width:640px){
   main{padding:12px}
   .panel{padding:13px}
-  .meals-grid{grid-auto-columns:minmax(300px,84vw)}
+  .meals-grid{grid-template-columns:1fr}
   .stats{grid-template-columns:1fr 1fr}
   .brand h1{font-size:17px}
   .app-header{padding:12px}
