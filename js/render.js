@@ -109,9 +109,13 @@ const Renderer = {
         }).join('')
       : '<span class="muted">لم تُولَّد أي وجبات بعد.</span>';
     return `
-<section class="panel">
-  <div class="panel-head">
-    <h2>${escapeHtml(cfg.planName || 'لوحة التحكم')}</h2>
+<section class="panel dashboard-panel">
+  <div class="workspace-head">
+    <div>
+      <span class="workspace-eyebrow">ملخص مباشر</span>
+      <h2>${escapeHtml(cfg.planName || 'لوحة التحكم')}</h2>
+      <p>تابع جاهزية الخطة وتكلفتها وتغطية المكونات من نقطة واحدة.</p>
+    </div>
     <div class="actions no-print">
       <button class="btn" data-act="gen" type="button">توليد الوجبات</button>
       <button class="btn warn" data-act="reset" type="button">إعادة تعيين</button>
@@ -121,16 +125,15 @@ const Renderer = {
     </div>
   </div>
   <div class="status-banner ${bannerClass}">${escapeHtml(bannerTitle)}${bannerList}</div>
-  <div class="stats">
-    <div class="stat"><span>عدد الوجبات</span><strong>${State.current.meals.length} / ${cfg.mealCount}</strong></div>
+  <div class="stats dashboard-stats">
+    <div class="stat stat-primary"><span>عدد الوجبات</span><strong>${State.current.meals.length} <small>/ ${cfg.mealCount}</small></strong><small>الحالة الحالية للخطة</small></div>
     <div class="stat"><span>إجمالي التكلفة</span><strong>${formatMoney(validation.total, cfg)}</strong><small>الهدف ${formatMoney(validation.targetTotal, cfg)}</small></div>
     <div class="stat"><span>متوسط الوجبة</span><strong>${formatMoney(validation.average, cfg)}</strong><small>الهدف ${formatMoney(cfg.targetMealAvg, cfg)}</small></div>
     <div class="stat"><span>Δ</span><strong>${formatSigned(validation.delta, cfg)}</strong><small>${formatMoney(cfg.minMealCost, cfg)} – ${formatMoney(cfg.maxMealCost, cfg)}</small></div>
     <div class="stat"><span>تغطية المكونات</span><strong>${validation.usedCount} / ${Catalog.list.length}</strong></div>
     <div class="stat"><span>وجبات سليمة</span><strong>${validCount} / ${State.current.meals.length}</strong></div>
   </div>
-  <h3 style="font-size:15px;margin-top:4px">حالة الوجبات</h3>
-  <div class="meal-chips">${chips}</div>
+  <div class="dashboard-meals"><div><span class="workspace-eyebrow">حالة التنفيذ</span><h3>حالة الوجبات</h3></div><div class="meal-chips">${chips}</div></div>
 </section>`;
   },
 
@@ -282,9 +285,9 @@ const Renderer = {
 </div>`;
     }
     return `
-<article class="meal-card ${r.ok ? '' : 'bad'}" id="meal-card-${mi}">
+<article class="meal-card ${r.ok ? '' : 'bad'}" id="meal-card-${mi}" style="animation-delay:${Math.min(mi, 12) * 45}ms">
   <header>
-    <h3>وجبة ${mi + 1}</h3>
+    <div><span class="meal-index">وجبة ${String(mi + 1).padStart(2, '0')}</span><h3>تفاصيل الوجبة</h3></div>
     <span class="cost-badge${costClass}">${formatMoney(r.cost, cfg)}</span>
   </header>
   ${ruleChips ? `<div class="rule-chips">${ruleChips}</div>` : ''}
@@ -308,15 +311,15 @@ const Renderer = {
   meals(){
     const cfg = Config.get();
     if (!State.current.meals.length){
-      return `<section class="panel"><div class="panel-head"><h2>الوجبات</h2></div>
-        <div class="empty-state"><p>لا توجد خطة بعد.</p>
+      return `<section class="panel meals-panel meal-empty"><div class="workspace-head"><div><span class="workspace-eyebrow">مساحة التخطيط</span><h2>الوجبات</h2><p>تظهر هنا تفاصيل كل وجبة بعد إنشاء الخطة.</p></div></div>
+        <div class="empty-state"><span class="empty-kicker">الخطة غير مولّدة</span><h3>ابدأ بتوليد أول خطة</h3><p>سيتم توزيع المكونات والتحقق من القيود تلقائيًا.</p>
         <button class="btn" data-act="gen" type="button">توليد الوجبات</button></div></section>`;
     }
     const cards = State.current.meals.map((m, i) => this.mealCard(m, i)).join('');
     return `
-<section class="panel">
-  <div class="panel-head no-print">
-    <h2>الوجبات (${State.current.meals.length} من ${cfg.mealCount})</h2>
+<section class="panel meals-panel">
+  <div class="workspace-head no-print">
+    <div><span class="workspace-eyebrow">خطة العمل</span><h2>الوجبات</h2><p>${State.current.meals.length} من ${cfg.mealCount} وجبة جاهزة للمراجعة والتعديل.</p></div>
     <div class="actions">
       <button class="btn" data-act="validate-all" type="button">تحقق شامل</button>
       <button class="btn ghost" data-act="print" type="button">طباعة / PDF</button>
@@ -368,7 +371,7 @@ const Renderer = {
     }).join('');
 
     const customRulesList = (c.customRules || []).map(rule => {
-      const typeInfo = CUSTOM_RULE_TYPES[rule.type] || { label: rule.type, icon: '❓' };
+      const typeInfo = CUSTOM_RULE_TYPES[rule.type] || { label: rule.type };
       const sev = rule.severity || SEVERITY.ERROR;
       const sevLabel = sev === SEVERITY.ERROR ? 'خطأ' : sev === SEVERITY.WARNING ? 'تحذير' : 'معلومة';
       const sevClass = sev === SEVERITY.ERROR ? 'err' : sev === SEVERITY.WARNING ? 'warn' : 'info';
@@ -376,7 +379,7 @@ const Renderer = {
       const sevCardClass = sev === SEVERITY.ERROR ? '' : ' sev-' + sev;
       const specSummary = describeCustomRule(rule);
       return `<div class="rule-card${disabledClass}${sevCardClass}">
-        <div class="rule-head"><strong>${typeInfo.icon} ${escapeHtml(rule.name || typeInfo.label)}</strong>
+        <div class="rule-head"><strong>${escapeHtml(rule.name || typeInfo.label)}</strong>
           <div class="rule-actions">
             <span class="rule-badge">${escapeHtml(typeInfo.label)}</span>
             <span class="rule-badge ${sevClass}">${escapeHtml(sevLabel)}</span>
@@ -406,37 +409,37 @@ const Renderer = {
 </div>`).join('');
 
     return `
-<section class="panel">
-  <div class="panel-head">
-    <h2>الإعدادات الشاملة</h2>
+<section class="panel settings-panel">
+  <div class="workspace-head">
+    <div><span class="workspace-eyebrow">مساحة الضبط</span><h2>الإعدادات الشاملة</h2><p>تُحفظ التغييرات فورًا وتُطبّق في التوليد والتحقق التاليين.</p></div>
     <div class="actions no-print">
       <button class="btn ghost" data-act="export-settings" type="button">تصدير الإعدادات</button>
       <button class="btn ghost" data-act="import-settings" type="button">استيراد الإعدادات</button>
     </div>
   </div>
   <p class="small muted">كل التغييرات تُحفظ تلقائيًا. اضغط على رأس كل قسم للفتح/الإغلاق.</p>
-  ${sec('🎨 هوية التطبيق والعرض', `
+  ${sec('هوية التطبيق والعرض', `
     <div class="settings-grid">
       ${fld('اسم التطبيق', `<input type="text" data-cfg="appName" value="${escapeHtml(c.appName)}">`)}
       ${fld('اسم الخطة', `<input type="text" data-cfg="planName" value="${escapeHtml(c.planName)}">`)}
       ${fld('رمز العملة', `<input type="text" data-cfg="currencyLabel" value="${escapeHtml(c.currencyLabel)}">`)}
       ${fld('المنازل العشرية', `<input type="number" min="0" max="4" data-cfg="decimalPlaces" value="${c.decimalPlaces}">`, '0-4')}
     </div>`, true)}
-  ${sec('📋 أساسيات الخطة', `
+  ${sec('أساسيات الخطة', `
     <div class="settings-grid">
       ${fld('عدد الوجبات', `<input type="number" min="1" max="50" data-cfg="mealCount" value="${c.mealCount}">`)}
       ${fld('الحد الأدنى للمكونات', `<input type="number" min="1" max="30" data-cfg="minIngredientsPerMeal" value="${c.minIngredientsPerMeal}">`)}
       ${fld('البذرة العشوائية', `<input type="number" data-cfg="seed" value="${c.seed}">`)}
       ${fld('تغطية كل المكونات', `<input type="checkbox" data-cfg="requireCoverage" ${c.requireCoverage ? 'checked' : ''}>`)}
     </div>`)}
-  ${sec('💰 القيود المالية', `
+  ${sec('القيود المالية', `
     <div class="settings-grid">
       ${fld('الحد الأدنى للوجبة', `<input type="number" min="0" step="0.01" data-cfg="minMealCost" value="${c.minMealCost.toFixed(2)}">`)}
       ${fld('الحد الأقصى للوجبة', `<input type="number" min="0" step="0.01" data-cfg="maxMealCost" value="${c.maxMealCost.toFixed(2)}">`)}
       ${fld('المتوسط المستهدف', `<input type="number" min="0" step="0.01" data-cfg="targetMealAvg" value="${c.targetMealAvg.toFixed(2)}">`,
         `إجمالي مستهدف = ${formatMoney(c.targetMealAvg * c.mealCount, c)}`)}
     </div>`)}
-  ${sec('⚙️ استراتيجية التوليد', `
+  ${sec('استراتيجية التوليد', `
     <div class="settings-grid">
       ${fld('عدد محاولات البذرة', `<input type="number" min="1" max="100" data-cfg="generation.maxSeedAttempts" value="${c.generation.maxSeedAttempts}">`)}
       ${fld('محاولات لكل وجبة', `<input type="number" min="10" max="5000" step="10" data-cfg="generation.maxMealAttempts" value="${c.generation.maxMealAttempts}">`)}
@@ -444,44 +447,44 @@ const Renderer = {
       ${fld('تفاوت الهدف', `<input type="number" min="0" max="10" step="0.01" data-cfg="generation.targetTolerance" value="${c.generation.targetTolerance}">`)}
       ${fld('احتمال الفطير', `<input type="number" min="0" max="1" step="0.05" data-cfg="generation.pastryProbability" value="${c.generation.pastryProbability}">`)}
     </div>`)}
-  ${sec('🔢 إعدادات الكميات', `
+  ${sec('إعدادات الكميات', `
     <div class="settings-grid">
       ${fld('الكمية الافتراضية', `<input type="number" min="1" max="50" data-cfg="quantityDefaults.defaultQty" value="${c.quantityDefaults.defaultQty}">`)}
       ${fld('الحد الأقصى للكمية', `<input type="number" min="1" max="50" data-cfg="quantityDefaults.maxQty" value="${c.quantityDefaults.maxQty}">`)}
     </div>`)}
-  ${sec('🎛️ خيارات العرض', `
+  ${sec('خيارات العرض', `
     <div class="settings-grid">
       ${fld('شرائح القواعد', `<input type="checkbox" data-cfg="display.showRuleChips" ${c.display.showRuleChips ? 'checked' : ''}>`)}
       ${fld('جدول التكلفة', `<input type="checkbox" data-cfg="display.showBreakdown" ${c.display.showBreakdown ? 'checked' : ''}>`)}
       ${fld('قائمة المخالفات', `<input type="checkbox" data-cfg="display.showViolations" ${c.display.showViolations ? 'checked' : ''}>`)}
       ${fld('الانحراف عن المتوسط', `<input type="checkbox" data-cfg="display.showDeviation" ${c.display.showDeviation ? 'checked' : ''}>`)}
     </div>`)}
-  ${sec('🧭 سلوك التطبيق', `
+  ${sec('سلوك التطبيق', `
     <div class="settings-grid">
       ${fld('الحفظ التلقائي', `<input type="checkbox" data-cfg="behavior.autoSave" ${c.behavior.autoSave ? 'checked' : ''}>`)}
       ${fld('تأكيد قبل الإجراءات المدمّرة', `<input type="checkbox" data-cfg="behavior.confirmDestructive" ${c.behavior.confirmDestructive ? 'checked' : ''}>`)}
       ${fld('الحركات والانتقالات', `<input type="checkbox" data-cfg="behavior.enableAnimations" ${c.behavior.enableAnimations ? 'checked' : ''}>`)}
       ${fld('مدة التنبيهات', `<input type="number" min="500" max="20000" step="100" data-cfg="behavior.toastDurationMs" value="${c.behavior.toastDurationMs}">`, 'مللي ثانية')}
     </div>`)}
-  ${sec('🥔 الشيبسي (مطلوب في كل وجبة)', `
+  ${sec('الشيبسي (مطلوب في كل وجبة)', `
     <p class="small muted">الشيبسي مكوّن أساسي يظهر في كل وجبة مرة واحدة بالضبط. لا علاقة له بعبوة الشويبس (المشروب الغازي) — كل منهما مستقل تمامًا.</p>
     <div class="settings-grid">
       ${multi('مكونات الشيبسي', c.chips.ids, 'chips.ids')}
     </div>`)}
-  ${sec('📊 حدود استخدام المكونات', `
+  ${sec('حدود استخدام المكونات', `
     <p class="small muted">عند تحديد حد لمكوّن، لن يظهر في أكثر من هذا العدد من الوجبات. 0 = منع كامل. الشيبسي مستثنى لأنه إلزامي.</p>
     <div class="group-editor">
       ${usageRows || '<p class="muted small">لا توجد حدود محددة.</p>'}
       <button class="btn ghost tiny" type="button" data-act="add-usage-limit">+ إضافة حد</button>
     </div>`)}
-  ${sec('🍞 الخبز والفطير', `
+  ${sec('الخبز والفطير', `
     <div class="settings-grid">
       ${single('مكوّن الخبز', c.bread.id, 'bread.id')}
       ${single('مكوّن الفطير', c.bread.pastryId, 'bread.pastryId')}
       ${fld('كمية الخبز مع الفطير', `<input type="number" min="0" max="20" data-cfg="bread.qtyWithPastry" value="${c.bread.qtyWithPastry}">`)}
       ${fld('كمية الخبز بدون فطير', `<input type="number" min="0" max="20" data-cfg="bread.qtyWithoutPastry" value="${c.bread.qtyWithoutPastry}">`)}
     </div>`)}
-  ${sec('🥗 السلطة والخيار', `
+  ${sec('السلطة والخيار', `
     <div class="settings-grid">
       ${single('مكوّن السلطة', c.salad.id, 'salad.id')}
       ${multi('السلطة مطلوبة مع', c.salad.requiredWith, 'salad.requiredWith')}
@@ -489,26 +492,26 @@ const Renderer = {
       ${multi('الخيار ممنوع مع', c.cucumber.forbiddenWith, 'cucumber.forbiddenWith')}
       ${fld('الخيار يتطلب وجود جبن', `<input type="checkbox" data-cfg="cucumber.requiresCheese" ${c.cucumber.requiresCheese ? 'checked' : ''}>`)}
     </div>`)}
-  ${sec('🧀 جبنة المثلثات', `
+  ${sec('جبنة المثلثات', `
     <div class="settings-grid">
       ${single('مكوّن قطعة الجبنة', c.triangleCheese.id, 'triangleCheese.id')}
       ${single('مكوّن علبة المثلثات', c.triangleCheese.boxId, 'triangleCheese.boxId')}
       ${fld('الكمية المطلوبة', `<input type="number" min="0" max="20" data-cfg="triangleCheese.qty" value="${c.triangleCheese.qty}">`)}
       ${multi('تُفعَّل عند وجود', c.triangleCheese.triggers, 'triangleCheese.triggers')}
     </div>`)}
-  ${sec('🫒 الطحينة', `
+  ${sec('الطحينة', `
     <div class="settings-grid">
       ${single('مكوّن الطحينة', c.tahini.id, 'tahini.id')}
       ${single('مسموحة فقط مع', c.tahini.requiresId, 'tahini.requiresId')}
     </div>`)}
-  ${sec('🧀 المكونات التي تُحتسب كجبن', `
+  ${sec('المكونات التي تُحتسب كجبن', `
     <div class="settings-grid">${multi('قائمة مكونات الجبن', c.cheeseIds, 'cheeseIds')}</div>`)}
-  ${sec('🚫 مجموعات الاستبعاد', `
+  ${sec('مجموعات الاستبعاد', `
     <p class="small muted">كل مجموعة تمنع وجود أكثر من عنصر واحد منها في نفس الوجبة.</p>
     <div class="group-editor">${exclRows}
       <button class="btn ghost tiny" type="button" data-act="add-excl">+ إضافة مجموعة</button>
     </div>`)}
-  ${sec('⚖️ التوازن الغذائي (سكري / مالح)', `
+  ${sec('التوازن الغذائي (سكري / مالح)', `
     <p class="small muted">يضمن هذا القسم توزيعًا متوازنًا بين المكونات السكرية والمالحة. داخل الوجبة تُحتسب الفئة العالية فقط، وعلى مستوى الخطة تُحتسب العالية والمتوسطة معًا.</p>
     <div class="settings-grid">
       ${fld('تفعيل نظام التوازن', `<input type="checkbox" data-cfg="nutritionBalance.enabled" ${c.nutritionBalance.enabled ? 'checked' : ''}>`)}
@@ -520,20 +523,20 @@ const Renderer = {
       ${fld('الحد الأدنى للنسبة', `<input type="number" min="0" max="5" step="0.1" data-cfg="nutritionBalance.planWide.minRatio" value="${c.nutritionBalance.planWide.minRatio}">`)}
       ${fld('الحد الأقصى للنسبة', `<input type="number" min="0" max="5" step="0.1" data-cfg="nutritionBalance.planWide.maxRatio" value="${c.nutritionBalance.planWide.maxRatio}">`)}
     </div>`)}
-  ${sec('✨ محرك القواعد المخصصة', `
+  ${sec('محرك القواعد المخصصة', `
     <p class="small muted">أنشئ قواعدك الخاصة بلا حدود: مجموعات استبعاد، منع ثنائي، منع/إلزام شرطي، سماح مشروط.</p>
     <div class="actions" style="margin-bottom:12px">
       <button class="btn" type="button" data-act="add-custom-rule">+ قاعدة جديدة</button>
     </div>
     ${customRulesList || '<p class="muted small">لا توجد قواعد مخصصة.</p>'}`)}
-  ${sec('🎯 تشغيل / إيقاف القواعد المدمجة', `<div class="toggle-list">${ruleToggles}</div>`)}
-  ${sec('💾 البروفايلات', `
+  ${sec('تشغيل / إيقاف القواعد المدمجة', `<div class="toggle-list">${ruleToggles}</div>`)}
+  ${sec('البروفايلات', `
     <div class="actions" style="margin-bottom:12px">
       <button class="btn" type="button" data-act="save-profile">+ حفظ كبروفايل</button>
       <button class="btn ghost" type="button" data-act="import-profile">استيراد</button>
     </div>
     ${profileRows || '<p class="muted small">لا توجد بروفايلات.</p>'}`)}
-  ${sec('🔧 محرر JSON متقدم', `
+  ${sec('محرر JSON متقدم', `
     <p class="small muted">حرّر الإعدادات مباشرة كـ JSON.</p>
     <textarea id="jsonEditor" rows="16">${escapeHtml(JSON.stringify(c, null, 2))}</textarea>
     <div class="actions" style="margin-top:10px">
@@ -541,7 +544,7 @@ const Renderer = {
       <button class="btn ghost" type="button" data-act="reload-json">إعادة تحميل</button>
       <button class="btn ghost" type="button" data-act="copy-json">نسخ</button>
     </div>`)}
-  ${sec('♻️ إعادة تعيين متقدمة', `
+  ${sec('إعادة تعيين متقدمة', `
     <div class="actions" style="flex-wrap:wrap">
       <button class="btn warn" type="button" data-act="reset-settings">استعادة الإعدادات الافتراضية</button>
       <button class="btn danger" type="button" data-act="factory-reset">إعادة تعيين شاملة</button>
@@ -561,13 +564,13 @@ const Renderer = {
           return `<li class="log-item ${e.ok ? 'ok' : 'bad'}">
             <div class="log-head">
               <strong>${escapeHtml(e.scope)}</strong>
-              <span>${e.ok ? '✅ سليم' : '❌ مخالفات'}</span>
+              <span>${e.ok ? 'سليم' : 'مخالفات'}</span>
               <span class="muted small">${escapeHtml(new Date(e.ts).toLocaleString('ar-EG'))}</span>
             </div>${shown}</li>`;
         }).join('')
       : '<li class="empty-state">لا توجد عمليات تحقق مسجلة بعد.</li>';
-    return `<section class="panel">
-      <div class="panel-head"><h2>سجل التحقق</h2>
+    return `<section class="panel log-panel">
+      <div class="workspace-head"><div><span class="workspace-eyebrow">سجل تشغيلي</span><h2>سجل التحقق</h2><p>${entries.length ? `${entries.length} عملية تحقق محفوظة للمراجعة.` : 'ستظهر هنا نتائج التحقق من الخطط والتعديلات.'}</p></div>
         <div class="actions no-print"><button class="btn ghost" data-act="clear-log" type="button">تفريغ السجل</button></div>
       </div>
       <ul class="log-list">${items}</ul></section>`;
@@ -699,7 +702,7 @@ const Modals = {
     const r = existing ? deepClone(existing) : { id: newId('cr'), name: '', type: 'exclusiveGroup', enabled: true, severity: SEVERITY.ERROR, spec: {} };
     if (!r.spec) r.spec = {};
     const typeOpts = Object.keys(CUSTOM_RULE_TYPES).map(t =>
-      `<option value="${escapeHtml(t)}" ${r.type === t ? 'selected' : ''}>${CUSTOM_RULE_TYPES[t].icon} ${escapeHtml(CUSTOM_RULE_TYPES[t].label)}</option>`).join('');
+      `<option value="${escapeHtml(t)}" ${r.type === t ? 'selected' : ''}>${escapeHtml(CUSTOM_RULE_TYPES[t].label)}</option>`).join('');
     const sevOpts = [SEVERITY.ERROR,SEVERITY.WARNING,SEVERITY.INFO].map(s => {
       const lbl = s === SEVERITY.ERROR ? 'خطأ (يمنع)' : s === SEVERITY.WARNING ? 'تحذير' : 'معلومة';
       return `<option value="${s}" ${(r.severity || SEVERITY.ERROR) === s ? 'selected' : ''}>${lbl}</option>`;

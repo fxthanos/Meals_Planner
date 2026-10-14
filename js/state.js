@@ -122,11 +122,11 @@ const RULE_NAMES = Object.freeze({
 const MEAL_RULE_ORDER = Object.freeze(['R1','R3','R4','R5','R6','R7','R8','NUT','F1']);
 
 const CUSTOM_RULE_TYPES = Object.freeze({
-  exclusiveGroup:{ label:'مجموعة استبعاد', hint:'لا يجتمع أكثر من عنصر واحد من هذه المجموعة', icon:'🚫' },
-  forbidPair:{ label:'منع ثنائي', hint:'عنصران لا يجتمعان أبدًا', icon:'⛔' },
-  forbidWith:{ label:'منع شرطي', hint:'عنصر ممنوع عند وجود أي من المُشغِّلات', icon:'🚷' },
-  requireWith:{ label:'إلزام شرطي', hint:'عند وجود أي من المُشغِّلات، تُضاف العناصر المطلوبة', icon:'✅' },
-  allowOnlyWith:{ label:'سماح مشروط', hint:'عنصر مسموح فقط مع عناصر محددة', icon:'🔓' }
+  exclusiveGroup:{ label:'مجموعة استبعاد', hint:'لا يجتمع أكثر من عنصر واحد من هذه المجموعة' },
+  forbidPair:{ label:'منع ثنائي', hint:'عنصران لا يجتمعان أبدًا' },
+  forbidWith:{ label:'منع شرطي', hint:'عنصر ممنوع عند وجود أي من المُشغِّلات' },
+  requireWith:{ label:'إلزام شرطي', hint:'عند وجود أي من المُشغِّلات، تُضاف العناصر المطلوبة' },
+  allowOnlyWith:{ label:'سماح مشروط', hint:'عنصر مسموح فقط مع عناصر محددة' }
 });
 
 const SEVERITY = Object.freeze({ ERROR:'error', WARNING:'warning', INFO:'info' });
@@ -215,8 +215,8 @@ function describeCustomRule(rule){
   const spec = rule.spec || {};
   const nm = id => Catalog.get(id)?.nameAr || id;
   if (rule.type === 'exclusiveGroup') return (spec.items || []).map(nm).join('، ') || '—';
-  if (rule.type === 'forbidPair') return `«${nm(spec.a) || '؟'}» ⛔ «${nm(spec.b) || '؟'}»`;
-  if (rule.type === 'forbidWith') return `«${nm(spec.target) || '؟'}» ⛔ مع ${(spec.triggers || []).map(nm).join('، ')}`;
+  if (rule.type === 'forbidPair') return `«${nm(spec.a) || '؟'}» غير متوافق مع «${nm(spec.b) || '؟'}»`;
+  if (rule.type === 'forbidWith') return `«${nm(spec.target) || '؟'}» غير متوافق مع ${(spec.triggers || []).map(nm).join('، ')}`;
   if (rule.type === 'requireWith') return `إذا وُجد: ${(spec.triggers || []).map(nm).join('، ')} → أضف: ${(spec.thenAdd || []).map(t => `${nm(t.id)} × ${t.qty || 1}`).join('، ')}`;
   if (rule.type === 'allowOnlyWith') return `«${nm(spec.target) || '؟'}» مسموح فقط مع ${(spec.allowedWith || []).map(nm).join('، ')}`;
   return '';
