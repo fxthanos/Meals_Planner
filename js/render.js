@@ -418,7 +418,6 @@ const Renderer = {
     </div>
   </div>
   <p class="small muted">كل التغييرات تُحفظ تلقائيًا. اضغط على رأس كل قسم للفتح/الإغلاق.</p>
-  <div class="settings-sections">
   ${sec('هوية التطبيق والعرض', `
     <div class="settings-grid">
       ${fld('اسم التطبيق', `<input type="text" data-cfg="appName" value="${escapeHtml(c.appName)}">`)}
@@ -550,7 +549,6 @@ const Renderer = {
       <button class="btn warn" type="button" data-act="reset-settings">استعادة الإعدادات الافتراضية</button>
       <button class="btn danger" type="button" data-act="factory-reset">إعادة تعيين شاملة</button>
     </div>`)}
-  </div>
 </section>`;
   },
 
