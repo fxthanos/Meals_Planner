@@ -384,6 +384,22 @@ document.addEventListener('change', function(e){
     return;
   }
 
+  if (el.getAttribute('data-nutrition')){
+    const key = el.getAttribute('data-nutrition');
+    const id = el.getAttribute('data-id');
+    const level = el.value;
+    if (!['sugar','sodium'].includes(key) || !['low','medium','high'].includes(level)) return;
+    const g = Catalog.get(id);
+    if (!g) return;
+    g.nutrition = { ...g.nutrition, [key]: level };
+    State.save(); render();
+    const again = Array.from(document.querySelectorAll('[data-nutrition]'))
+      .find(x => x.getAttribute('data-nutrition') === key && x.getAttribute('data-id') === id);
+    if (again) again.focus();
+    UI.toast('تم حفظ التصنيف الغذائي', 'ok');
+    return;
+  }
+
   if (el.getAttribute('data-field')){
     const field = el.getAttribute('data-field');
     const id = el.getAttribute('data-id');

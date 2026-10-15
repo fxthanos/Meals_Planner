@@ -114,27 +114,35 @@ textarea{resize:vertical;min-height:80px;font-family:Consolas,Monaco,monospace;f
 .catalog-table-note{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:0 2px 9px;color:var(--muted);font-size:11.5px;font-weight:700}
 .catalog-table-note span:first-child{color:var(--brand-2)}
 .catalog-table{min-width:1190px}
-.catalog-table thead th{top:0;background:#f1f7f5;color:#31504a;font-size:11.5px;letter-spacing:.01em;padding:11px 10px}
+.catalog-table thead th{top:0;background:#eaf3f1;color:#163f38;font-size:12px;font-weight:800;letter-spacing:.01em;padding:13px 12px}
 .catalog-table tbody tr{animation:catalog-reveal .42s cubic-bezier(.16,1,.3,1) both}
-.catalog-table tbody td{padding:10px;border-bottom-color:#e6efed;transition:background .2s ease}
+.catalog-table tbody td{padding:14px 12px;border-bottom-color:#e0ece9;vertical-align:top;transition:background .2s ease}
 .catalog-table tbody tr:hover td{background:#f5fbf9}
 .catalog-table input,.catalog-table select{min-height:34px;border-color:transparent;background:transparent;padding:5px 7px;transition:border-color .18s ease,background .18s ease,box-shadow .18s ease}
 .catalog-table input:hover,.catalog-table select:hover{border-color:#cededa;background:#fff}
 .catalog-table input:focus,.catalog-table select:focus{border-color:var(--brand);background:#fff;box-shadow:0 0 0 3px rgba(15,123,108,.11);outline:none}
-.catalog-id{width:72px;white-space:nowrap}
+.catalog-table select{border-color:#cbdad7;background:#f9fcfb;font-weight:650;cursor:pointer}
+.catalog-id{width:72px;white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
 .catalog-id span{display:inline-block;padding:3px 6px;border-radius:5px;background:#eef5f3;color:#57706a;font-family:Consolas,Monaco,monospace;font-size:11px;font-weight:700;direction:ltr}
 .catalog-name{min-width:215px}
 .catalog-name input{font-weight:750;color:#173b35}
-.catalog-price{min-width:104px;color:#123d36;font-size:14px;letter-spacing:-.02em}
-.catalog-price small{color:var(--muted);font-size:11px;font-weight:600}
+.catalog-price{min-width:104px;color:#123d36;font-size:14px;letter-spacing:-.02em;text-align:right;font-variant-numeric:tabular-nums}
 .catalog-attributes{min-width:245px}
 .catalog-attributes .btn{border-color:#c4d9d4}
-.catalog-tags{margin-top:6px;color:#58716c;font-size:11.5px;line-height:1.45}
-.catalog-nutrition{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
-.catalog-nutrition .rule-chip{background:#f2f7f6;border-color:#dceae7;color:#526863}
+.catalog-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px;color:#58716c;font-size:11.5px;line-height:1.45}
+.catalog-tag{padding:2px 6px;border:1px solid #d7e6e2;border-radius:999px;background:#f7fbfa}
+.catalog-nutrition{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.catalog-nutrition-field{display:inline-flex;align-items:center;gap:4px;color:#526863;font-size:11px;font-weight:700}
+.catalog-nutrition select{width:auto;min-width:82px;min-height:30px;padding:3px 6px;font-size:11px}
+.catalog-nutrition .nutrition-low{background:#e7f6ec;border-color:#bfe6cc;color:#1a7f37}
+.catalog-nutrition .nutrition-medium{background:#fdf3e0;border-color:#f0d9a8;color:#8a5800}
+.catalog-nutrition .nutrition-high{background:#fdecea;border-color:#f3c2bd;color:#b3261e}
 .catalog-coverage{min-width:136px}
+.catalog-coverage .rule-chip.pass{background:#eef5f3;border-color:#d7e6e2;color:#42655e}
 .catalog-actions{white-space:nowrap;min-width:120px}
 .catalog-actions .btn + .btn{margin-inline-start:4px}
+.catalog-actions .catalog-action-delete{color:var(--err);border-color:#e8bbb6;background:#fff}
+.catalog-actions .catalog-action-delete:hover{background:#fdecea}
 .catalog-audit{display:grid;grid-template-columns:minmax(180px,.42fr) minmax(0,1fr);gap:28px;margin-top:25px;padding:23px 30px 28px;background:#f7faf9;border-top:1px solid var(--line)}
 .catalog-audit h3{margin:0;color:#173b35;font-size:17px}
 .catalog-audit ul{list-style:none;margin:0;padding:0;border-top:1px solid #dce8e5}

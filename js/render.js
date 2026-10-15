@@ -138,6 +138,11 @@ const Renderer = {
   },
 
   catalog(){
+    const cfg = Config.get();
+    const nutritionLabels = { low:'منخفض', medium:'متوسط', high:'مرتفع' };
+    const nutritionLevel = value => ['low','medium','high'].includes(value) ? value : 'unknown';
+    const nutritionOptions = selected => Object.entries(nutritionLabels).map(([value, label]) =>
+      `<option value="${value}" ${value === selected ? 'selected' : ''}>${label}</option>`).join('');
     const coverage = {};
     State.current.meals.forEach(m => m.items.forEach(it => { coverage[it.id] = (coverage[it.id] || 0) + 1; }));
     const q = ui.q.trim();
@@ -163,13 +168,15 @@ const Renderer = {
       const limitTag = limit !== Infinity && !isChipsItem ? ` <span class="rule-chip fail">حد: ${limit}</span>` : '';
       const chipsTag = isChipsItem ? ` <span class="rule-chip pass">مطلوب في كل وجبة</span>` : '';
       const covHtml = cnt > 0 ? `<span class="rule-chip pass">في ${cnt} وجبة</span>${limitTag}${chipsTag}` : `<span class="rule-chip fail">غير مستخدم</span>${limitTag}${chipsTag}`;
-      const tagsLabel = (g.specialRules || []).length ? (g.specialRules || []).map(t => escapeHtml(TAG_LABELS[t] || t)).join('، ') : '<span class="muted">لا يوجد</span>';
-      const nutLabel = g.nutrition ? `<span class="rule-chip">سكر: ${g.nutrition.sugar}</span> <span class="rule-chip">ملح: ${g.nutrition.sodium}</span>` : '';
+      const tagsLabel = (g.specialRules || []).length ? (g.specialRules || []).map(t => `<span class="catalog-tag">${escapeHtml(TAG_LABELS[t] || t)}</span>`).join('') : '<span class="muted">لا يوجد</span>';
+      const sugarLevel = nutritionLevel(g.nutrition?.sugar);
+      const sodiumLevel = nutritionLevel(g.nutrition?.sodium);
+      const nutLabel = g.nutrition ? `<label class="catalog-nutrition-field"><span>سكر</span><select class="nutrition-${sugarLevel}" data-nutrition="sugar" data-id="${escapeHtml(g.id)}" aria-label="مستوى السكر في ${escapeHtml(g.nameAr)}">${nutritionOptions(sugarLevel)}</select></label><label class="catalog-nutrition-field"><span>ملح</span><select class="nutrition-${sodiumLevel}" data-nutrition="sodium" data-id="${escapeHtml(g.id)}" aria-label="مستوى الملح في ${escapeHtml(g.nameAr)}">${nutritionOptions(sodiumLevel)}</select></label>` : '';
       return `
 <tr style="animation-delay:${Math.min(index, 12) * 35}ms">
   <td class="catalog-id"><span>${escapeHtml(g.id)}</span></td>
   <td class="catalog-name"><input type="text" aria-label="اسم ${escapeHtml(g.nameAr)}" data-field="nameAr" data-id="${escapeHtml(g.id)}" value="${escapeHtml(g.nameAr)}"></td>
-  <td class="price-cell catalog-price">${g.price.toFixed(Config.get().decimalPlaces)} <small>${escapeHtml(Config.get().currencyLabel)}</small></td>
+  <td class="price-cell catalog-price">${g.price.toFixed(cfg.decimalPlaces)}</td>
   <td><input type="text" data-field="unit" data-id="${escapeHtml(g.id)}" value="${escapeHtml(g.unit || '')}" placeholder="غير محدد"></td>
   <td><select data-field="classification" data-id="${escapeHtml(g.id)}">${clsOptions}</select></td>
   <td><input type="text" data-field="category" data-id="${escapeHtml(g.id)}" value="${escapeHtml(g.category || '')}" placeholder="غير محدد"></td>
@@ -181,8 +188,8 @@ const Renderer = {
   </td>
   <td class="catalog-coverage">${covHtml}</td>
   <td class="catalog-actions">
-    <button class="btn ghost tiny" data-act="edit-price" data-id="${escapeHtml(g.id)}">السعر</button>
-    <button class="btn danger tiny" data-act="delete-ing" data-id="${escapeHtml(g.id)}">حذف</button>
+    <button class="btn ghost tiny catalog-action-price" data-act="edit-price" data-id="${escapeHtml(g.id)}" aria-label="تعديل سعر ${escapeHtml(g.nameAr)}">السعر</button>
+    <button class="btn ghost tiny catalog-action-delete" data-act="delete-ing" data-id="${escapeHtml(g.id)}" aria-label="حذف ${escapeHtml(g.nameAr)}">حذف</button>
   </td>
 </tr>`;
     }).join('');
@@ -224,9 +231,9 @@ const Renderer = {
     <div class="catalog-table-note"><span>تحرير مباشر</span><span>${list.length} من ${Catalog.list.length} مكوّن</span></div>
     <div class="table-wrap">
     <table class="catalog-table">
-      <thead><tr><th scope="col">المعرّف</th><th scope="col">الاسم</th><th scope="col">السعر</th><th scope="col">الوحدة</th>
+      <thead><tr><th scope="col">المعرّف</th><th scope="col">الاسم</th><th scope="col">السعر (${escapeHtml(cfg.currencyLabel)})</th><th scope="col">الوحدة</th>
         <th scope="col">التصنيف</th><th scope="col">الفئة</th><th scope="col">العائلة</th>
-        <th scope="col">الوسوم والتصنيف الغذائي</th><th scope="col">التغطية</th><th scope="col">إجراءات</th></tr></thead>
+        <th scope="col">الوسوم والتغذية</th><th scope="col">التغطية</th><th scope="col">إجراءات</th></tr></thead>
       <tbody>${rows || '<tr><td colspan="10" class="empty-state">لا توجد نتائج.</td></tr>'}</tbody>
     </table>
     </div>
