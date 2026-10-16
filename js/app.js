@@ -66,8 +66,8 @@ const Actions = {
       State.setMeals(result.meals);
       const vp = Validation.plan(result.meals);
       UI.logValidation('الخطة (توليد)', vp);
-      if (result.missing.length) UI.toast(`تم التوليد مع ${result.missing.length} مكوّن غير مغطى`, 'warn');
-      else UI.toast(`تم توليد ${result.meals.length} وجبة بنجاح`, 'ok');
+      if (result.missing.length) UI.saveToast(`تم التوليد مع ${result.missing.length} مكوّن غير مغطى`, 'warn');
+      else UI.saveToast(`تم توليد ${result.meals.length} وجبة بنجاح`);
       if (location.hash !== '#/meals') location.hash = '#/meals';
       else render();
     } catch(e){
@@ -101,10 +101,9 @@ const Actions = {
           priceAudit: isArray(incoming.priceAudit) ? incoming.priceAudit.slice(0, 200) : []
         };
         if (isObject(incomingCfg)){ Storage.write(STORAGE_KEYS.CONFIG, incomingCfg); Config.load(); }
-        State.save();
         UI.logValidation('استيراد', Validation.plan(State.current.meals));
         render();
-        UI.toast('تم الاستيراد بنجاح', 'ok');
+        UI.saveToast('تم الاستيراد بنجاح');
       } catch(e){ UI.toast('تعذّر قراءة الملف', 'err'); }
     }, () => UI.toast('تعذّر قراءة الملف', 'err'));
   },
@@ -116,7 +115,7 @@ const Actions = {
       ui.editingMeal = null;
       UI.hideModal();
       render();
-      UI.toast('تمت إعادة التعيين', 'ok');
+      UI.saveToast('تمت إعادة التعيين');
       return true;
     };
     confirmDestructive({ title: 'تأكيد إعادة التعيين',
@@ -204,7 +203,7 @@ document.addEventListener('click', function(e){
       return;
     }
 
-    case 'clear-log': State.current.log = []; State.save(); render(); UI.toast('تم التفريغ', 'ok'); return;
+    case 'clear-log': State.current.log = []; render(); UI.saveToast('تم التفريغ'); return;
 
     case 'pick-single': {
       const path = btn.getAttribute('data-target');
@@ -379,8 +378,8 @@ document.addEventListener('change', function(e){
     const idx = g.specialRules.indexOf(tag);
     if (el.checked){ if (idx === -1) g.specialRules.push(tag); }
     else { if (idx !== -1) g.specialRules.splice(idx, 1); }
-    State.save(); render();
-    UI.toast('تم التحديث', 'ok');
+    render();
+    UI.saveToast('تم التحديث');
     return;
   }
 
@@ -392,11 +391,11 @@ document.addEventListener('change', function(e){
     const g = Catalog.get(id);
     if (!g) return;
     g.nutrition = { ...g.nutrition, [key]: level };
-    State.save(); render();
+    render();
     const again = Array.from(document.querySelectorAll('[data-nutrition]'))
       .find(x => x.getAttribute('data-nutrition') === key && x.getAttribute('data-id') === id);
     if (again) again.focus();
-    UI.toast('تم حفظ التصنيف الغذائي', 'ok');
+    UI.saveToast('تم حفظ التصنيف الغذائي');
     return;
   }
 
@@ -406,7 +405,6 @@ document.addEventListener('change', function(e){
     const g = Catalog.get(id);
     if (!g) return;
     g[field] = el.value;
-    State.save();
     /* ponytail: re-render only for SELECT (classification) — text inputs skip render
        because change fires on blur and render would destroy the click target mid-click */
     if (el.tagName === 'SELECT'){
@@ -415,7 +413,7 @@ document.addEventListener('change', function(e){
         .find(x => x.getAttribute('data-field') === field && x.getAttribute('data-id') === id);
       if (again) again.focus();
     }
-    UI.toast('تم الحفظ', 'ok');
+    UI.saveToast('تم الحفظ');
     return;
   }
 

@@ -19,6 +19,10 @@ const UI = {
       setTimeout(() => el.remove(), 320);
     }, dur);
   },
+  saveToast(msg, type = 'ok'){
+    const saved = State.save();
+    this.toast(saved ? msg : msg + ' — الحفظ التلقائي مُعطّل', saved ? type : 'warn');
+  },
   showModal({ title, body, confirmLabel = 'تأكيد', cancelLabel = 'إلغاء', danger = false, onConfirm }){
     document.getElementById('modalTitle').textContent = title || '';
     document.getElementById('modalBody').innerHTML = body || '';
@@ -141,8 +145,9 @@ const Renderer = {
     const cfg = Config.get();
     const nutritionLabels = { low:'منخفض', medium:'متوسط', high:'مرتفع' };
     const nutritionLevel = value => ['low','medium','high'].includes(value) ? value : 'unknown';
-    const nutritionOptions = selected => Object.entries(nutritionLabels).map(([value, label]) =>
-      `<option value="${value}" ${value === selected ? 'selected' : ''}>${label}</option>`).join('');
+    const nutritionOptions = selected => (selected === 'unknown' ? '<option value="" selected disabled>غير محدد</option>' : '') +
+      Object.entries(nutritionLabels).map(([value, label]) =>
+        `<option value="${value}" ${value === selected ? 'selected' : ''}>${label}</option>`).join('');
     const coverage = {};
     State.current.meals.forEach(m => m.items.forEach(it => { coverage[it.id] = (coverage[it.id] || 0) + 1; }));
     const q = ui.q.trim();
@@ -177,10 +182,10 @@ const Renderer = {
   <td class="catalog-id"><span>${escapeHtml(g.id)}</span></td>
   <td class="catalog-name"><input type="text" aria-label="اسم ${escapeHtml(g.nameAr)}" data-field="nameAr" data-id="${escapeHtml(g.id)}" value="${escapeHtml(g.nameAr)}"></td>
   <td class="price-cell catalog-price">${g.price.toFixed(cfg.decimalPlaces)}</td>
-  <td><input type="text" data-field="unit" data-id="${escapeHtml(g.id)}" value="${escapeHtml(g.unit || '')}" placeholder="غير محدد"></td>
-  <td><select data-field="classification" data-id="${escapeHtml(g.id)}">${clsOptions}</select></td>
-  <td><input type="text" data-field="category" data-id="${escapeHtml(g.id)}" value="${escapeHtml(g.category || '')}" placeholder="غير محدد"></td>
-  <td><input type="text" data-field="family" data-id="${escapeHtml(g.id)}" value="${escapeHtml(g.family || '')}" placeholder="—"></td>
+  <td><input type="text" aria-label="وحدة ${escapeHtml(g.nameAr)}" data-field="unit" data-id="${escapeHtml(g.id)}" value="${escapeHtml(g.unit || '')}" placeholder="غير محدد"></td>
+  <td><select aria-label="تصنيف ${escapeHtml(g.nameAr)}" data-field="classification" data-id="${escapeHtml(g.id)}">${clsOptions}</select></td>
+  <td><input type="text" aria-label="فئة ${escapeHtml(g.nameAr)}" data-field="category" data-id="${escapeHtml(g.id)}" value="${escapeHtml(g.category || '')}" placeholder="غير محدد"></td>
+  <td><input type="text" aria-label="عائلة ${escapeHtml(g.nameAr)}" data-field="family" data-id="${escapeHtml(g.id)}" value="${escapeHtml(g.family || '')}" placeholder="—"></td>
   <td class="catalog-attributes">
     <button class="btn ghost tiny" data-act="edit-tags" data-id="${escapeHtml(g.id)}">الوسوم (${(g.specialRules || []).length})</button>
     <div class="catalog-tags">${tagsLabel}</div>
@@ -424,7 +429,7 @@ const Renderer = {
       <button class="btn ghost" data-act="import-settings" type="button">استيراد الإعدادات</button>
     </div>
   </div>
-  <p class="small muted">كل التغييرات تُحفظ تلقائيًا. اضغط على رأس كل قسم للفتح/الإغلاق.</p>
+  <p class="small muted">كل التغييرات في هذه الصفحة تُحفظ فورًا. اضغط على رأس كل قسم للفتح/الإغلاق.</p>
   ${sec('هوية التطبيق والعرض', `
     <div class="settings-grid">
       ${fld('اسم التطبيق', `<input type="text" data-cfg="appName" value="${escapeHtml(c.appName)}">`)}
@@ -468,7 +473,7 @@ const Renderer = {
     </div>`)}
   ${sec('سلوك التطبيق', `
     <div class="settings-grid">
-      ${fld('الحفظ التلقائي', `<input type="checkbox" data-cfg="behavior.autoSave" ${c.behavior.autoSave ? 'checked' : ''}>`)}
+      ${fld('الحفظ التلقائي', `<input type="checkbox" data-cfg="behavior.autoSave" ${c.behavior.autoSave ? 'checked' : ''}>`, 'عند الإيقاف: تعديلات الكتالوج والوجبات لا تُحفظ — الإعدادات تُحفظ دائمًا')}
       ${fld('تأكيد قبل الإجراءات المدمّرة', `<input type="checkbox" data-cfg="behavior.confirmDestructive" ${c.behavior.confirmDestructive ? 'checked' : ''}>`)}
       ${fld('الحركات والانتقالات', `<input type="checkbox" data-cfg="behavior.enableAnimations" ${c.behavior.enableAnimations ? 'checked' : ''}>`)}
       ${fld('مدة التنبيهات', `<input type="number" min="500" max="20000" step="100" data-cfg="behavior.toastDurationMs" value="${c.behavior.toastDurationMs}">`, 'مللي ثانية')}
@@ -619,11 +624,10 @@ const Modals = {
         if (newPrice === g.price){ UI.toast('لم يتغير', 'warn'); UI.hideModal(); return true; }
         State.addPriceAudit({ ts: new Date().toISOString(), id: g.id, nameAr: g.nameAr, oldPrice: g.price, newPrice });
         g.price = newPrice;
-        State.save();
         UI.hideModal();
         render();
         UI.logValidation(`تعديل سعر: ${g.nameAr}`, Validation.plan(State.current.meals));
-        UI.toast('تم تعديل السعر', 'ok');
+        UI.saveToast('تم تعديل السعر');
         return true;
       }});
   },
@@ -662,9 +666,8 @@ const Modals = {
           specialRules: tags, nutrition: { sugar:'low', sodium:'low' } });
         if (!ok){ UI.toast('تعذّرت الإضافة', 'err'); return false; }
         State.current.ingredients = Catalog.list;
-        State.save();
         UI.hideModal(); render();
-        UI.toast('تمت الإضافة', 'ok');
+        UI.saveToast('تمت الإضافة');
         return true;
       }});
   },
@@ -678,9 +681,8 @@ const Modals = {
       State.current.meals.forEach(m => { m.items = m.items.filter(it => it.id !== id); });
       Catalog.remove(id);
       Config.save();
-      State.save();
       UI.hideModal(); render();
-      UI.toast('تم الحذف', 'ok');
+      UI.saveToast('تم الحذف');
       return true;
     };
     confirmDestructive({ title: 'تأكيد الحذف',
@@ -693,9 +695,8 @@ const Modals = {
       Catalog.reset();
       State.current.ingredients = Catalog.list;
       State.current.meals.forEach(m => { m.items = m.items.filter(it => Catalog.has(it.id)); });
-      State.save();
       UI.hideModal(); render();
-      UI.toast('تمت الاستعادة', 'ok');
+      UI.saveToast('تمت الاستعادة');
       return true;
     };
     confirmDestructive({ title: 'استعادة الكتالوج الأصلي',

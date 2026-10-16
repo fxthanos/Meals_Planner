@@ -137,6 +137,7 @@ textarea{resize:vertical;min-height:80px;font-family:Consolas,Monaco,monospace;f
 .catalog-nutrition .nutrition-low{background:#e7f6ec;border-color:#bfe6cc;color:#1a7f37}
 .catalog-nutrition .nutrition-medium{background:#fdf3e0;border-color:#f0d9a8;color:#8a5800}
 .catalog-nutrition .nutrition-high{background:#fdecea;border-color:#f3c2bd;color:#b3261e}
+.catalog-nutrition .nutrition-unknown{background:#f3f5f4;border-color:#d5dddb;color:#68766f}
 .catalog-coverage{min-width:136px}
 .catalog-coverage .rule-chip.pass{background:#eef5f3;border-color:#d7e6e2;color:#42655e}
 .catalog-actions{white-space:nowrap;min-width:120px}

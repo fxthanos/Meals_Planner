@@ -1359,10 +1359,11 @@ const State = {
     return this.current;
   },
   save(){
-    if (!this.current) return;
+    if (!this.current) return false;
     const cfg = Config.get();
-    if (cfg?.behavior?.autoSave === false) return;
-    if (!Storage.write(STORAGE_KEYS.STATE, this.current)) UI.toast('تعذّر حفظ البيانات', 'err');
+    if (cfg?.behavior?.autoSave === false) return false;
+    if (!Storage.write(STORAGE_KEYS.STATE, this.current)){ UI.toast('تعذّر حفظ البيانات', 'err'); return false; }
+    return true;
   },
   get(){ return this.current; },
   setMeals(meals){ this.current.meals = meals; this.save(); },
